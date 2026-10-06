@@ -23,3 +23,19 @@ def test_uuid() -> None:
     i = id_generators.uuid()
     # Raise ValueError if badly formed hexadecimal UUID string
     UUID(next(i), version=4)
+
+
+def test_generators_are_iterators() -> None:
+    for i in (
+        id_generators.decimal(),
+        id_generators.hexadecimal(),
+        id_generators.random(),
+        id_generators.uuid(),
+    ):
+        assert iter(i) is i
+
+
+def test_decimal() -> None:
+    i = id_generators.decimal(5)
+    assert next(i) == 5
+    assert next(i) == 6
