@@ -15,7 +15,11 @@ def notification_pure(method: str, params: Params) -> Dict[str, Any]:
     return {
         "jsonrpc": "2.0",
         "method": method,
-        **({"params": params} if params else {}),
+        **(
+            {"params": list(params) if isinstance(params, tuple) else params}
+            if params
+            else {}
+        ),
     }
 
 

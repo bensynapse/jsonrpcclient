@@ -12,12 +12,13 @@ from .requests import (
     request_random,
     request_uuid,
 )
-from .responses import Error, Ok, parse, parse_json
+from .responses import Error, InvalidResponse, Ok, parse, parse_json
 
-__version__ = "4.0.4"
+__version__ = "4.1.0"
 
 __all__ = [
     "Error",
+    "InvalidResponse",
     "Ok",
     "notification",
     "notification_json",

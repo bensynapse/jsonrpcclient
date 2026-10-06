@@ -1,5 +1,24 @@
 # jsonrpcclient Change Log
 
+## 4.1.0
+
+- If a response has both `result` and `error`, and `error` is not null,
+  `parse` now returns an `Error`. It used to return `Ok(result=None)` and drop
+  the server's error. JSON-RPC 2.0 doesn't allow both, but JSON-RPC 1.0 style
+  servers send `"result": null` with an error.
+- Malformed responses now raise `InvalidResponse` with a message that says what
+  is wrong, for example `missing 'id'`. It subclasses `KeyError` and
+  `TypeError`, which earlier versions raised, so existing `except` clauses
+  still catch it.
+- `parse_json` on JSON that isn't an object or array, such as `"pong"`, used to
+  say "Use parse_json on strings". It now says it expected an object.
+- `parse` given bytes now raises the same "Use parse_json on strings" error as
+  a str.
+- `notification` sends tuple params as a list, the same as `request` does.
+  The JSON output is unchanged, but the returned dict now holds a list.
+- The `parse` docstring now says that a batch gives a one-pass lazy iterator,
+  not a list.
+
 ## 4.0.4
 
 This release fixes the links on the PyPI page. The 4.0.3 page linked to the

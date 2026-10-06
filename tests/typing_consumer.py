@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, Union
 
 from jsonrpcclient import (
     Error,
+    InvalidResponse,
     Ok,
     notification,
     notification_json,
@@ -52,3 +53,7 @@ if TYPE_CHECKING:
     else:
         assert_type(parsed, Error)
         assert_type(parsed.message, str)
+
+    # InvalidResponse can be caught as either of the old exception types.
+    key_error: KeyError = InvalidResponse("x")
+    type_error: TypeError = InvalidResponse("x")

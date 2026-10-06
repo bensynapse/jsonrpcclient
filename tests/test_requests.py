@@ -29,11 +29,11 @@ from jsonrpcclient.requests import (
         ),
         (
             notification("sqrt", params=(1,)),
-            {"jsonrpc": "2.0", "method": "sqrt", "params": (1,)},
+            {"jsonrpc": "2.0", "method": "sqrt", "params": [1]},
         ),
         (
             notification("sqrt", params=(1, 2, 3)),
-            {"jsonrpc": "2.0", "method": "sqrt", "params": (1, 2, 3)},
+            {"jsonrpc": "2.0", "method": "sqrt", "params": [1, 2, 3]},
         ),
         (
             notification("sqrt", params={"name": "Foo"}),
