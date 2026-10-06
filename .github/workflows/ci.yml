@@ -80,10 +80,10 @@ jobs:
       - run: mkdocs build --strict
       - name: Examples in the README and docs, with every optional library installed
         run: |
-          for f in README.md docs/*.md; do
+          for f in README.md $(find docs -name '*.md' | sort); do
             python tests/doc_examples.py "$f"
           done
-      - name: Transport examples against a test server
+      - name: Transport and typing examples against test servers
         run: python docs/examples/check_examples.py
 
   ci-ok:

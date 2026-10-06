@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block announce %}
+  {%- if config.extra.unreleased -%}
+    These docs describe jsonrpcclient {{ config.extra.unreleased }}, which
+    isn't on PyPI yet. <code>pip install jsonrpcclient</code> gives you
+    {{ config.extra.pypi_version }}. The
+    <a href="{{ config.site_url }}changelog/">changelog</a> lists the
+    differences.
+  {%- endif -%}
+{% endblock %}
+
+{% block extrahead %}
+  {%- set meta = page.meta if page and page.meta else {} -%}
+  {%- if meta.title -%}
+    {%- set title = meta.title -%}
+  {%- elif page and page.title and not page.is_homepage -%}
+    {%- set title = page.title ~ " - " ~ config.site_name -%}
+  {%- else -%}
+    {%- set title = config.site_name -%}
+  {%- endif -%}
+  {%- set description = meta.description or config.site_description -%}
+  {%- set image = config.site_url ~ config.extra.social_image -%}
+  <link rel="apple-touch-icon" href="{{ 'assets/apple-touch-icon.png' | url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ title | striptags }}">
+  <meta property="og:description" content="{{ description }}">
+  {%- if page and page.canonical_url %}
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  {%- endif %}
+  <meta property="og:image" content="{{ image }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="jsonrpcclient: Create JSON-RPC 2.0 requests and parse responses in Python">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ title | striptags }}">
+  <meta name="twitter:description" content="{{ description }}">
+  <meta name="twitter:image" content="{{ image }}">
+{% endblock %}

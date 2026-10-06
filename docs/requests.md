@@ -1,98 +1,84 @@
+---
+description: Build JSON-RPC 2.0 requests in Python with request and request_json, with positional or named params and your own ids.
+---
+
 # Requests
 
 ## The request function
 
 `request` builds a request as a dict:
 
-```python
+```pycon
 >>> from jsonrpcclient import request
 >>> request("ping")
 {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
 ```
 
 `request_json` gives the same request as a JSON string. It's `json.dumps`
-applied to the result of `request`.
+applied to the result of `request`, and it uses the same id sequence:
 
-```python
+```pycon
 >>> from jsonrpcclient import request_json
 >>> request_json("ping")
 '{"jsonrpc": "2.0", "method": "ping", "id": 2}'
 ```
 
-## Ids
+Most HTTP libraries serialize a dict for you (`json=` in requests, httpx and
+aiohttp), so use `request` with those. Use `request_json` where you send text
+yourself, as with websockets or ZeroMQ.
 
-Each call takes the next id:
-
-```python
->>> request("ping")
-{'jsonrpc': '2.0', 'method': 'ping', 'id': 3}
->>> request("ping")
-{'jsonrpc': '2.0', 'method': 'ping', 'id': 4}
-```
-
-Pass `id` to choose your own:
-
-```python
->>> request("ping", id="foo")
-{'jsonrpc': '2.0', 'method': 'ping', 'id': 'foo'}
-```
-
-Three other functions generate a different kind of id. Each one has its own
-sequence.
-
-```python
->>> from jsonrpcclient import request_hex, request_random, request_uuid
->>> request_hex("ping")
-{'jsonrpc': '2.0', 'method': 'ping', 'id': '1'}
->>> request_random("ping")  # 8 random letters and digits
-{'jsonrpc': '2.0', 'method': 'ping', 'id': '...'}
->>> request_uuid("ping")  # a random UUID
-{'jsonrpc': '2.0', 'method': 'ping', 'id': '...-...-...-...-...'}
-```
-
-`request_json_hex`, `request_json_random` and `request_json_uuid` are the JSON
-string versions.
-
-All of these are safe to call from several threads at once. Before 4.0.4,
-`request_hex`, `request_random` and `request_uuid` could raise
-`ValueError: generator already executing` when used from more than one thread.
+The ids in the examples on this page continue from one block to the next,
+because each call takes the next id. [Ids](ids.md) explains how ids work and
+how to choose your own.
 
 ## Parameters
 
-Pass a list (or tuple) for positional parameters, or a dict for named ones.
-A tuple is sent as a list. (Before 4.1.0, notifications kept the tuple.)
+Pass a list (or tuple) for positional parameters, or a dict for named ones:
 
-```python
+```pycon
 >>> request("sqrt", params=[16])
-{'jsonrpc': '2.0', 'method': 'sqrt', 'params': [16], 'id': 5}
+{'jsonrpc': '2.0', 'method': 'sqrt', 'params': [16], 'id': 3}
 >>> request("sqrt", params=(16,))
-{'jsonrpc': '2.0', 'method': 'sqrt', 'params': [16], 'id': 6}
+{'jsonrpc': '2.0', 'method': 'sqrt', 'params': [16], 'id': 4}
 >>> request("greet", params={"name": "Ada"})
-{'jsonrpc': '2.0', 'method': 'greet', 'params': {'name': 'Ada'}, 'id': 7}
+{'jsonrpc': '2.0', 'method': 'greet', 'params': {'name': 'Ada'}, 'id': 5}
 ```
 
-Empty params are left out of the request. The library doesn't check the type of
-`params` at runtime, but mypy and pyright will flag anything other than a list,
-tuple or dict.
+`params` is also the second positional argument, so `request("sqrt", [16])`
+works too.
 
-## Batch requests
+A tuple is sent as a list. Empty params (`[]`, `()`, `{}` or `None`) are left
+out of the request, which JSON-RPC 2.0 allows. The library doesn't check the
+type of `params` at runtime, but mypy and pyright flag anything other than a
+list, tuple or dict.
 
-A batch is a list of requests:
+!!! warning "A string is not params"
+    `request("get", "fruit")` sends `"params": "fruit"`, which isn't valid
+    JSON-RPC. Wrap a single positional argument in a list:
+    `request("get", ["fruit"])`. This is also what happens to 3.x code that
+    passes a URL first. See [Migration](migration.md).
 
-```python
->>> import json
->>> json.dumps([request("ping") for _ in range(3)])
-'[{"jsonrpc": "2.0", "method": "ping", "id": 8}, {"jsonrpc": "2.0", "method": "ping", "id": 9}, {"jsonrpc": "2.0", "method": "ping", "id": 10}]'
+## Your own id
+
+Pass `id` to choose the id yourself. Any JSON value works:
+
+```pycon
+>>> request("ping", id="abc")
+{'jsonrpc': '2.0', 'method': 'ping', 'id': 'abc'}
 ```
 
-## Notifications
+`id=None` sends `"id": null`. That is still a request, not a
+[notification](notifications.md), and JSON-RPC 2.0 discourages it.
 
-A notification is a request without an id. The server doesn't reply to it.
+## Other id styles
 
-```python
->>> from jsonrpcclient import notification, notification_json
->>> notification("ping")
-{'jsonrpc': '2.0', 'method': 'ping'}
->>> notification_json("log", params=["hello"])
-'{"jsonrpc": "2.0", "method": "log", "params": ["hello"]}'
-```
+`request_hex`, `request_random` and `request_uuid` work like `request` but
+generate hexadecimal, random or UUID ids. `request_json_hex`,
+`request_json_random` and `request_json_uuid` are their JSON string versions.
+See [Ids](ids.md).
+
+## What to read next
+
+- [Notifications](notifications.md), for calls that need no reply.
+- [Batches](batches.md), to send several requests at once.
+- [Responses](responses.md), to read the reply.

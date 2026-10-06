@@ -1,10 +1,10 @@
 import logging
 
-import requests
+import httpx
 
 from jsonrpcclient import Error, Ok, parse, request
 
-response = requests.post("http://localhost:8000/", json=request("ping"), timeout=10)
+response = httpx.post("http://localhost:8000/", json=request("ping"), timeout=10)
 response.raise_for_status()
 parsed = parse(response.json())
 if isinstance(parsed, Ok):

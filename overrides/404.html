@@ -1,0 +1,21 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <h1>Page not found</h1>
+  <p>
+    There's no page at this address. It may have moved when the documentation
+    was reorganized.
+  </p>
+  <ul>
+    <li><a href="{{ config.site_url }}">Home</a>: install and quickstart</li>
+    <li><a href="{{ config.site_url }}requests/">Requests</a> and <a href="{{ config.site_url }}responses/">Responses</a></li>
+    <li><a href="{{ config.site_url }}examples/">Transports</a>: examples with urllib, requests, httpx, aiohttp, websockets and ZeroMQ</li>
+    <li><a href="{{ config.site_url }}reference/">API reference</a></li>
+    <li><a href="{{ config.site_url }}migration/">Migrating from 3.x</a></li>
+  </ul>
+  <p>
+    You can also search with the box at the top of the page, or
+    <a href="https://github.com/bensynapse/jsonrpcclient/issues">open an issue</a>
+    if a link brought you here.
+  </p>
+{% endblock %}
