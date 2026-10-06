@@ -1,4 +1,5 @@
 """Test sentinels.py"""
+
 from jsonrpcclient.sentinels import Sentinel
 
 

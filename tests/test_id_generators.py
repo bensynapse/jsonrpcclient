@@ -1,4 +1,5 @@
 """Test id_generators.py"""
+
 import re
 from uuid import UUID
 

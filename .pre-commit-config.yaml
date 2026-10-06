@@ -1,42 +1,14 @@
-default_language_version:
-  python: python3.7
-fail_fast: true
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.8
+    rev: v0.16.10
     hooks:
-      - id: ruff
-        types: [python]
+      - id: ruff-check
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+    rev: v2.4.0
     hooks:
       - id: mypy
-        types: [python]
         args: [--strict]
-        exclude: ^(docs|examples/requests_client_py310.py)
         additional_dependencies:
-          - aiohttp<3.8
           - pytest
-          - pyzmq
-          - requests<3
-          - types-requests<3
-          - types-setuptools
-          - websockets
-
-  - repo: https://github.com/ambv/black
-    rev: 22.8.0
-    hooks:
-      - id: black
-        types: [python]
-        exclude: ^docs
-        args: [--check]
-
-  - repo: local
-    hooks:
-      - id: isort
-        name: isort
-        entry: isort
-        language: system
-        args: [--check,--profile=black]
-        types: [python]

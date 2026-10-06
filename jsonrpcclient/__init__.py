@@ -1,4 +1,5 @@
 """Jsonrpcclient"""
+
 from .requests import (
     notification,
     notification_json,
@@ -14,8 +15,12 @@ from .requests import (
 from .responses import Error, Ok, parse, parse_json
 
 __all__ = [
+    "Error",
+    "Ok",
     "notification",
     "notification_json",
+    "parse",
+    "parse_json",
     "request",
     "request_hex",
     "request_json",
@@ -24,9 +29,4 @@ __all__ = [
     "request_json_uuid",
     "request_random",
     "request_uuid",
-    "request",
-    "Ok",
-    "Error",
-    "parse",
-    "parse_json",
 ]
