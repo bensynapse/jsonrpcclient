@@ -1,29 +1,48 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core>=3.12,<5"]
+build-backend = "flit_core.buildapi"
 
 [project]
+name = "jsonrpcclient"
+dynamic = ["version"]
+description = "Create JSON-RPC 2.0 requests and parse responses"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.8"
 authors = [
-    {name = "Beau Barker", email = "beau@explodinglabs.com"}
+    {name = "Beau Barker", email = "beau@explodinglabs.com"},
 ]
+maintainers = [
+    {name = "bensynapse"},
+]
+keywords = ["json-rpc", "jsonrpc", "json-rpc-2.0", "rpc", "client"]
 classifiers = [
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
-description = "Send JSON-RPC requests"
-license = {file = "LICENSE"}
-name = "jsonrpcclient"
-readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.6"
-version = "4.0.3"
 
 [project.urls]
-homepage = "https://explodinglabs.com/jsonrpcclient/"
-repository = "https://github.com/explodinglabs/jsonrpcclient"
+Homepage = "https://bensynapse.github.io/jsonrpcclient/"
+Documentation = "https://bensynapse.github.io/jsonrpcclient/"
+Repository = "https://github.com/bensynapse/jsonrpcclient"
+Issues = "https://github.com/bensynapse/jsonrpcclient/issues"
+Changelog = "https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 qa = [
@@ -31,12 +50,15 @@ qa = [
     "pytest-cov",
 ]
 
-[tool.setuptools]
-include-package-data = true
-packages = [
-    "jsonrpcclient"
+[tool.flit.sdist]
+include = [
+    "CHANGELOG.md",
+    "docs/",
+    "mkdocs.yml",
+    "requirements/",
+    "tests/",
+    "tox.ini",
 ]
-zip-safe = false
 
 [tool.ruff]
 line-length = 88
