@@ -14,7 +14,7 @@ authors = [
     {name = "Beau Barker", email = "beau@explodinglabs.com"},
 ]
 maintainers = [
-    {name = "bensynapse"},
+    {name = "Synapse Research"},
 ]
 keywords = ["json-rpc", "jsonrpc", "json-rpc-2.0", "rpc", "client"]
 classifiers = [

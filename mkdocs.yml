@@ -5,8 +5,8 @@ repo_url: https://github.com/bensynapse/jsonrpcclient
 repo_name: bensynapse/jsonrpcclient
 edit_uri: edit/main/docs/
 copyright: >-
-  jsonrpcclient is MIT licensed. Created by Beau Barker, maintained by
-  bensynapse.
+  jsonrpcclient is MIT licensed. Created by Beau Barker. Maintained by
+  <a href="https://synapsereality.io">Synapse Research</a>.
 theme:
   name: material
   custom_dir: overrides

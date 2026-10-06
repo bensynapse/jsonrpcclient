@@ -7,9 +7,10 @@ request ids count up from 1 as they do for a reader trying the examples. Run
 each file in a fresh interpreter (tests/test_docs.py does).
 
 A python or pycon block that contains ">>>" is a doctest: the output must
-match, and "..." matches anything. Any other python block has to run, and if
-the next block is a text block titled "Output" (```text title="Output"), what
-the code prints must match it.
+match, and "..." matches anything. Any other python block has to run. If the
+next block is its output, what the code prints must match it. The docs mark
+that with a title (```text title="Output"), which mkdocs shows. GitHub doesn't
+show titles, so the README puts a line "Output:" before a plain ```text block.
 
 HTML comments on the lines just before a block change how it runs:
     <!-- requires: ujson -->     skip unless ujson can be imported
@@ -38,6 +39,7 @@ from tests import fake_server
 # A fence can be indented, for example inside an admonition.
 FENCE = re.compile(r"^(\s*)```\s*(\w*)(.*)$")
 OUTPUT = re.compile(r'^\s*title="Output"\s*$')
+OUTPUT_LABEL = "Output:"
 MARKER = re.compile(r"^<!--\s*(requires|min-python|server|skip)(?::\s*(.+?))?\s*-->$")
 
 
@@ -88,13 +90,27 @@ def python_blocks(text: str) -> List[Block]:
 
 
 def output_after(lines: List[str], i: int) -> Optional[str]:
-    """Return the text of an "Output" block that starts at or after line i."""
-    while i < len(lines) and not lines[i].strip():
-        i += 1
+    """Return the text of the output block that starts at or after line i.
+
+    That is a text block titled "Output", or a plain text block after a line
+    that says "Output:".
+    """
+
+    def skip_blank(i: int) -> int:
+        while i < len(lines) and not lines[i].strip():
+            i += 1
+        return i
+
+    i = skip_blank(i)
+    labelled = i < len(lines) and lines[i].strip() == OUTPUT_LABEL
+    if labelled:
+        i = skip_blank(i + 1)
     if i >= len(lines) or not FENCE.match(lines[i]):
         return None
     language, rest, body, _ = fenced(lines, i)
-    if language != "text" or not OUTPUT.match(rest):
+    if language != "text":
+        return None
+    if not (OUTPUT.match(rest) or (labelled and not rest.strip())):
         return None
     return "\n".join(body)
 
