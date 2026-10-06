@@ -1,48 +1,128 @@
 site_name: jsonrpcclient
-site_description: Create JSON-RPC requests and parse responses in Python
+site_description: Create JSON-RPC 2.0 requests and parse responses in Python
 site_url: https://bensynapse.github.io/jsonrpcclient/
 repo_url: https://github.com/bensynapse/jsonrpcclient
 repo_name: bensynapse/jsonrpcclient
 edit_uri: edit/main/docs/
+copyright: >-
+  jsonrpcclient is MIT licensed. Created by Beau Barker, maintained by
+  bensynapse.
 theme:
   name: material
+  custom_dir: overrides
+  font: false
   logo: assets/logo.png
+  favicon: assets/favicon.png
+  icon:
+    repo: fontawesome/brands/github
   features:
-    - navigation.footer
+    - content.action.edit
+    - content.code.annotate
     - content.code.copy
+    - navigation.footer
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
   palette:
     - media: "(prefers-color-scheme)"
       scheme: default
-      primary: "indigo"
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: "indigo"
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: "indigo"
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
+extra:
+  # The version these docs describe while it isn't on PyPI yet. It shows a
+  # banner on every page. Remove it when that version is released (see
+  # RELEASING.md).
+  unreleased: "4.1.0"
+  pypi_version: "4.0.3"
+  social_image: assets/social-card.png
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            docstring_section_style: list
+            heading_level: 3
+            members_order: source
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_full_path: false
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
 extra_css:
   - assets/extra.css
+extra_javascript:
+  - assets/copy-without-prompts.js
+  - assets/a11y.js
 markdown_extensions:
   - admonition
-  - pymdownx.highlight
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      # Adds language-pycon etc., which copy-without-prompts.js looks for.
+      pygments_lang_class: true
   - pymdownx.superfences
   - pymdownx.snippets:
       check_paths: true
+  - tables
+  - toc:
+      permalink: true
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
 nav:
   - Home: index.md
-  - Requests: requests.md
-  - Responses: responses.md
-  - Examples: examples.md
+  - Guide:
+      - Requests: requests.md
+      - Notifications: notifications.md
+      - Batches: batches.md
+      - Ids: ids.md
+      - Responses: responses.md
+      - Error handling: errors.md
+      - Typing: typing.md
+      - Threads and async: threads.md
+  - Transports:
+      - Overview: examples.md
+      - urllib: transports/urllib.md
+      - requests: transports/requests.md
+      - httpx: transports/httpx.md
+      - aiohttp: transports/aiohttp.md
+      - websockets: transports/websockets.md
+      - ZeroMQ: transports/zeromq.md
+  - API reference: reference.md
+  - Migration: migration.md
   - FAQ: faq.md
-  - Changelog: https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md
+  - Project:
+      - Changelog: changelog.md
+      - Contributing: contributing.md
+      - Security: security.md
+      - License: license.md
+      - jsonrpcserver: https://github.com/bensynapse/jsonrpcserver

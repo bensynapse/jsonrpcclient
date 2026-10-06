@@ -7,7 +7,7 @@ from jsonrpcclient import Error, Ok, parse_json, request_json
 
 
 async def main() -> None:
-    async with connect("ws://localhost:5000") as websocket:
+    async with connect("ws://localhost:8000") as websocket:
         await websocket.send(request_json("ping"))
         parsed = parse_json(await websocket.recv())
     if isinstance(parsed, Ok):

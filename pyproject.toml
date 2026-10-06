@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "jsonrpcclient"
 dynamic = ["version"]
-description = "Create JSON-RPC 2.0 requests and parse responses"
+description = "Create JSON-RPC 2.0 requests and parse responses in Python"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -42,7 +42,7 @@ Homepage = "https://bensynapse.github.io/jsonrpcclient/"
 Documentation = "https://bensynapse.github.io/jsonrpcclient/"
 Repository = "https://github.com/bensynapse/jsonrpcclient"
 Issues = "https://github.com/bensynapse/jsonrpcclient/issues"
-Changelog = "https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md"
+Changelog = "https://bensynapse.github.io/jsonrpcclient/changelog/"
 
 [project.optional-dependencies]
 qa = [
@@ -54,6 +54,7 @@ qa = [
 include = [
     "CHANGELOG.md",
     "docs/",
+    "overrides/",
     "mkdocs.yml",
     "requirements/",
     "tests/",
@@ -65,8 +66,8 @@ line-length = 88
 target-version = "py38"
 
 [tool.ruff.format]
-# Its code blocks are "--8<--" include lines, not Python.
-exclude = ["docs/examples.md"]
+# Their code blocks include files with "--8<--" lines, which aren't Python.
+exclude = ["docs/index.md", "docs/typing.md", "docs/transports/*.md"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
@@ -75,10 +76,10 @@ select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
 # mypy only accepts 3.10 or later here. pyright checks the 3.8 target.
 python_version = "3.10"
 strict = true
-files = ["jsonrpcclient", "tests"]
+files = ["jsonrpcclient", "tests", "docs/examples/typing_example.py"]
 
 [tool.pyright]
-include = ["jsonrpcclient", "tests"]
+include = ["jsonrpcclient", "tests", "docs/examples/typing_example.py"]
 pythonVersion = "3.8"
 typeCheckingMode = "strict"
 # Use "# pyright: ignore[...]" so mypy and pyright ignores are checked separately.

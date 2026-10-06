@@ -1,6 +1,12 @@
-"""Generators which yield an id to include in a JSON-RPC request.
+"""Iterators of request ids.
 
-Every function here returns an iterator that is safe to share between threads.
+Each function returns a new, independent iterator. Take ids from it with
+`next()` and pass them to `request(..., id=...)`. Every iterator is safe to
+share between threads.
+
+The `request`, `request_hex`, `request_random` and `request_uuid` functions
+each use their own module-level iterator from here, shared by the whole
+process.
 """
 
 import itertools
@@ -33,13 +39,18 @@ class _ThreadSafeIterator(Iterator[T]):
 
 
 def decimal(start: int = 1) -> Iterator[int]:
-    """
-    Increments from `start`.
-
-    e.g. 1, 2, 3, .. 9, 10, 11, etc.
+    """Count up in integers: 1, 2, 3, and so on.
 
     Args:
-        start: The first value to start with.
+        start: The first id.
+
+    Returns:
+        An endless, thread-safe iterator of ints.
+
+    Examples:
+        >>> ids = decimal(100)
+        >>> next(ids), next(ids)
+        (100, 101)
     """
     return _ThreadSafeIterator(itertools.count(start))
 
@@ -51,13 +62,18 @@ def _hexadecimal(start: int) -> Iterator[str]:
 
 
 def hexadecimal(start: int = 1) -> Iterator[str]:
-    """
-    Incremental hexadecimal numbers.
-
-    e.g. 1, 2, 3, .. 9, a, b, etc.
+    """Count up in lowercase hexadecimal strings: "1", ... "9", "a", "b".
 
     Args:
-        start: The first value to start with.
+        start: The first id, as an int. `hexadecimal(10)` starts at "a".
+
+    Returns:
+        An endless, thread-safe iterator of strs.
+
+    Examples:
+        >>> ids = hexadecimal(9)
+        >>> next(ids), next(ids)
+        ('9', 'a')
     """
     return _ThreadSafeIterator(_hexadecimal(start))
 
@@ -68,18 +84,25 @@ def _random(length: int, chars: str) -> Iterator[str]:
 
 
 def random(length: int = 8, chars: str = digits + ascii_lowercase) -> Iterator[str]:
-    """
-    A random string.
+    """Random strings, such as "fubui5e6".
 
-    Not unique, but has around 1 in a million chance of collision (with the default 8
-    character length).
-
-    Example:
-        'fubui5e6'
+    The ids are not guaranteed to be unique, and Python's `random.choice`
+    is not a secure source of randomness. With the defaults there are 36**8
+    (about 2.8 million million) possible ids, so a clash between two ids in
+    flight at the same time is very unlikely. Use `uuid` if a clash would
+    matter.
 
     Args:
-        length: Length of the random string.
-        chars: The characters to randomly choose from.
+        length: The number of characters in each id.
+        chars: The characters to choose from. The default is the digits and
+            the lowercase letters a to z.
+
+    Returns:
+        An endless, thread-safe iterator of strs.
+
+    Examples:
+        >>> len(next(random(length=12)))
+        12
     """
     return _ThreadSafeIterator(_random(length, chars))
 
@@ -90,10 +113,12 @@ def _uuid() -> Iterator[str]:
 
 
 def uuid() -> Iterator[str]:
-    """
-    Unique uuid ids.
+    """Random UUIDs (version 4) as strings.
 
-    Example:
-        '9bfe2c93-717e-4a45-b91b-55422c5af4ff'
+    For example "9bfe2c93-717e-4a45-b91b-55422c5af4ff". The safe choice when
+    several processes or machines send requests to the same server.
+
+    Returns:
+        An endless, thread-safe iterator of strs.
     """
     return _ThreadSafeIterator(_uuid())

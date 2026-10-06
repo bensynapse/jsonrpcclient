@@ -15,6 +15,11 @@ Fixes go into the latest release. Older releases don't get updates.
 
 ## Old domains
 
-jsonrpcclient no longer controls its old website domains. The only official
-places are this repository, https://bensynapse.github.io/jsonrpcclient/ and
+jsonrpcclient no longer controls its old website domains, jsonrpcclient.com
+and jsonrpcserver.com. They now belong to someone else, so ignore them and any
+links to them. The copy of the docs at explodinglabs.com/jsonrpcclient/ is old
+and no longer updated.
+
+The only official places are this repository,
+https://bensynapse.github.io/jsonrpcclient/ and
 https://pypi.org/project/jsonrpcclient/.

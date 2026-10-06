@@ -29,9 +29,24 @@ Settings → Environments → pypi.
 
 ## Each release
 
-1. Merge a pull request that sets `__version__` in `jsonrpcclient/__init__.py`
-   and adds a `## <version>` section to CHANGELOG.md. The release workflow
-   fails if either is missing or they don't match the tag.
+1. Merge a pull request that gets the version ready:
+   - `__version__` in `jsonrpcclient/__init__.py` is the new version.
+   - Its CHANGELOG.md heading has the release date instead of "not released
+     yet": `## 4.1.0 (2026-10-20)`.
+   - The `unreleased` and `pypi_version` lines under `extra` in mkdocs.yml are
+     deleted. They show the "not on PyPI yet" banner on every docs page.
+     Merging this redeploys the docs, so merge it just before you tag.
+   - The paragraph under "Install" in README.md that says the version isn't
+     released yet is deleted. The README becomes the PyPI page.
+
+   The release workflow checks all of this. It stops if the version and tag
+   don't match or the CHANGELOG heading has no date. It also stops if
+   mkdocs.yml or README.md still say the version isn't released.
+
+   4.0.4 and 4.1.0 are both marked "not released yet". 4.0.4 can still be
+   tagged on its own at `6a1569a`, before 4.1.0. If you skip it, move its
+   CHANGELOG entries into the 4.1.0 section. Then change "New in 4.0.4" in the
+   docs to "New in 4.1.0" (`grep -rn "4\.0\.4" docs` finds them).
 2. Tag the merge commit on main and push the tag:
 
    ```sh
