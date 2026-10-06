@@ -11,6 +11,13 @@
 {% endblock %}
 
 {% block extrahead %}
+  {#- GitHub Pages can't enforce HTTPS for this site yet, so send plain-HTTP
+      visitors to the HTTPS address. -#}
+  <script>
+    if (location.protocol === "http:" && location.hostname.endsWith(".github.io")) {
+      location.replace("https:" + location.href.slice(5));
+    }
+  </script>
   {%- set meta = page.meta if page and page.meta else {} -%}
   {%- if meta.title -%}
     {%- set title = meta.title -%}
