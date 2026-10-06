@@ -60,7 +60,7 @@ All of these are safe to call from several threads at once. Before 4.0.4,
 ## Parameters
 
 Pass a list (or tuple) for positional parameters, or a dict for named ones.
-A tuple is sent as a list.
+A tuple is sent as a list. (Before 4.1.0, notifications kept the tuple.)
 
 ```python
 >>> request("sqrt", params=[16])
