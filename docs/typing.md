@@ -6,7 +6,7 @@ description: jsonrpcclient ships type hints for mypy and pyright. How parse is t
 
 jsonrpcclient ships type hints and a `py.typed` marker, so mypy, pyright and
 your editor check your calls without any stubs. CI checks the library and its
-typing examples with `mypy --strict` and `pyright --strict`.
+typing examples with mypy and pyright in strict mode.
 
 ## What parse returns
 
@@ -78,7 +78,7 @@ parsed = parse(data)  # Ok | Error, so the type checker makes you narrow it
 
 `jsonrpcclient.responses.Response` is the type alias for `Ok | Error`. Use it
 for functions that take or return one parsed response. This example passes
-`mypy --strict` and `pyright --strict` in CI:
+mypy and pyright in strict mode in CI:
 
 ```python
 --8<-- "docs/examples/typing_example.py"

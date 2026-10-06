@@ -9,14 +9,14 @@ library that sends them. Each page below has a complete example that talks to
 a JSON-RPC server on `localhost:8000` that answers `ping` with `pong`. CI runs
 every one of them against a test server.
 
-| Transport | Library | Sync or async | Page |
-|---|---|---|---|
-| HTTP | `urllib` (standard library, no install) | sync | [urllib](transports/urllib.md) |
-| HTTP | [requests](https://requests.readthedocs.io/) | sync | [requests](transports/requests.md) |
-| HTTP | [httpx](https://www.python-httpx.org/) | both | [httpx](transports/httpx.md) |
-| HTTP | [aiohttp](https://docs.aiohttp.org/) | async | [aiohttp](transports/aiohttp.md) |
-| WebSocket | [websockets](https://websockets.readthedocs.io/) | async | [websockets](transports/websockets.md) |
-| ZeroMQ | [pyzmq](https://pyzmq.readthedocs.io/) | sync | [ZeroMQ](transports/zeromq.md) |
+| Library | Transport | Sync or async |
+|---|---|---|
+| [urllib](transports/urllib.md) (standard library) | HTTP | sync |
+| [requests](transports/requests.md) | HTTP | sync |
+| [httpx](transports/httpx.md) | HTTP | both |
+| [aiohttp](transports/aiohttp.md) | HTTP | async |
+| [websockets](transports/websockets.md) | WebSocket | async |
+| [pyzmq](transports/zeromq.md) | ZeroMQ | sync |
 
 The pattern is the same everywhere:
 

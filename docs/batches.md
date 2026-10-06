@@ -64,14 +64,14 @@ you need the responses more than once.
 ## Edge cases
 
 These three cases catch people out. The [requests transport
-example](transports/requests.md) handles all of them.
+example](transports/requests.md) handles the first one.
 
 **The server rejects the whole batch.** The batch itself can be invalid, for
 example an empty list. JSON-RPC 2.0 then has the server reply with a single
 error object, not a list. `parse` on that dict returns one `Error`. Looping
-over an `Error` would go through its fields (code, message, data, id)
-without raising, so a loop like `for parsed in parse(data)` silently loses
-the error. Check the shape first:
+over an `Error` goes through its fields (code, message, data, id). A loop
+that checks `isinstance(parsed, Ok)` matches nothing and silently loses the
+error, and one that reads `parsed.id` fails with `AttributeError`. Check the shape first:
 
 ```pycon
 >>> from jsonrpcclient import parse

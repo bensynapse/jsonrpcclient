@@ -44,7 +44,8 @@ usually fine.
 
 ## The server sends both result and error. What do I get?
 
-An `Error`, if `error` is an object and not null. See
+An `Error`, if `error` is an object with `code` and `message`. If `error`
+is something else that isn't null, `parse` raises `InvalidResponse`. See
 [Responses](responses.md#a-response-with-both-result-and-error). This
 changed in 4.1.0.
 
