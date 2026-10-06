@@ -1,4 +1,5 @@
 """Requests"""
+
 import json
 from functools import partial
 from typing import Any, Dict, Iterator, Tuple, Union

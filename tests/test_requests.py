@@ -1,4 +1,5 @@
 """Test requests.py"""
+
 from typing import Any, Dict
 
 import pytest

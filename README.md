@@ -33,6 +33,7 @@ Generate a request:
 
 ```python
 from jsonrpcclient import request, parse
+
 req = request("ping")
 # => {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
 ```

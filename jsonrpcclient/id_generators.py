@@ -1,4 +1,5 @@
 """Generators which yield an id to include in a JSON-RPC request."""
+
 import itertools
 from random import choice
 from string import ascii_lowercase, digits

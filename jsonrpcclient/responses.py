@@ -1,4 +1,5 @@
 """Responses"""
+
 import json
 from typing import Any, Dict, Iterable, List, NamedTuple, Union
 
