@@ -15,6 +15,7 @@ import pytest
 
 import jsonrpcclient
 from jsonrpcclient import id_generators
+from tests.doc_examples import python_blocks
 
 ROOT = Path(__file__).parent.parent
 DOCS = ROOT / "docs"
@@ -43,6 +44,14 @@ def test_readme_quickstart_is_the_tested_example() -> None:
     readme = (ROOT / "README.md").read_text()
     example = (DOCS / "examples" / "quickstart.py").read_text()
     assert python_block(readme, "## Quickstart") == example
+
+
+def test_readme_quickstart_output_is_checked() -> None:
+    """The "Output:" block under the quickstart must be compared, not ignored."""
+    readme = (ROOT / "README.md").read_text()
+    example = (DOCS / "examples" / "quickstart.py").read_text()
+    (block,) = [b for b in python_blocks(readme) if b.code == example]
+    assert block.output == "pong"
 
 
 def test_every_included_example_is_checked() -> None:
