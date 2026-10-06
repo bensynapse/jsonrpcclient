@@ -21,9 +21,9 @@ response, and you send it with any library you like.
     {'jsonrpc': '2.0', 'method': 'http://fruits.com', 'params': 'get', 'id': 1}
     ```
 
-    If your code still calls `request`, `notify` or `send` with a URL first,
-    nothing reaches the server. Search your code for those calls when you
-    upgrade. With keyword arguments, such as `request(url, "get", color="yellow")`,
+    If your code still calls `request` with a URL first, nothing reaches the
+    server. Search your code for those calls when you upgrade. `notify` and
+    `send` no longer exist, so code that uses them fails at import. With keyword arguments, such as `request(url, "get", color="yellow")`,
     you get `TypeError: request() got an unexpected keyword argument 'color'`
     instead.
 
@@ -98,6 +98,12 @@ Most code needs no change. These are the differences you might notice.
 is present and not null, `parse` returns an `Error`. 4.0 returned
 `Ok(result=None)` and dropped the server's error. If you relied on that, check
 for `Error` instead.
+
+**A broken `error` next to a `result` now raises.** If a response has a
+`result` and a non-null `error` that isn't an object with `code` and
+`message`, such as `"error": "boom"` or `"error": false`, `parse` raises
+`InvalidResponse`. 4.0 returned `Ok` and ignored the error. If a server you
+use does this, catch `InvalidResponse` around `parse`.
 
 **Malformed responses raise `InvalidResponse`.** It subclasses `KeyError` and
 `TypeError`, which 4.0 raised, so existing `except KeyError` or

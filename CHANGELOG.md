@@ -15,6 +15,9 @@ for what to check when upgrading.
   `parse` now returns an `Error`. It used to return `Ok(result=None)` and drop
   the server's error. JSON-RPC 2.0 doesn't allow both, but JSON-RPC 1.0 style
   servers send `"result": null` with an error.
+- If a response has a `result` and a non-null `error` that isn't an object
+  with `code` and `message` (for example a string, `false` or `""`), `parse`
+  now raises `InvalidResponse`. 4.0 returned `Ok` and ignored the error.
 - `parse_json` on JSON that isn't an object or array, such as `"pong"`, used to
   say "Use parse_json on strings". It now says it expected an object.
 - `parse` given bytes now raises the same "Use parse_json on strings" error as

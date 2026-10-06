@@ -205,8 +205,9 @@ def parse_json(
             array.
 
     Raises:
-        json.JSONDecodeError: If `response` isn't valid JSON. A `ValueError`
-            subclass.
+        ValueError: If `response` isn't valid JSON. Usually this is
+            `json.JSONDecodeError`, or `UnicodeDecodeError` for bytes that
+            aren't valid UTF-8.
         InvalidResponse: If a response is malformed, including JSON that is
             neither an object nor an array.
 

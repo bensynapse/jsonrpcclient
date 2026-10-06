@@ -44,7 +44,9 @@ Settings → Environments → pypi.
    mkdocs.yml or README.md still say the version isn't released.
 
    4.0.4 and 4.1.0 are both marked "not released yet". 4.0.4 can still be
-   tagged on its own at `6a1569a`, before 4.1.0. If you skip it, move its
+   tagged on its own at `6a1569a`, before 4.1.0. A tag runs the workflow
+   from the tagged commit, so that tag gets the older checks. It also
+   publishes that commit's undated `## 4.0.4` CHANGELOG text as the notes. If you skip it, move its
    CHANGELOG entries into the 4.1.0 section. Then change "New in 4.0.4" in the
    docs to "New in 4.1.0" (`grep -rn "4\.0\.4" docs` finds them).
 2. Tag the merge commit on main and push the tag:

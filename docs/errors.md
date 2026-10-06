@@ -11,9 +11,9 @@ part, reading the response. Your transport library handles the rest.
 
 | What happened | What you get | How to handle it |
 |---|---|---|
-| Can't connect, or the request timed out | your transport's exception, such as `requests.ConnectionError`, `requests.Timeout`, `httpx.TransportError`, `aiohttp.ClientConnectionError` or `urllib.error.URLError` | catch it around the call |
+| Can't connect, or the request timed out | your transport's exception: `requests.RequestException`, `httpx.TransportError`, `aiohttp.ClientError` or `asyncio.TimeoutError` with aiohttp, and `OSError` with urllib | catch it around the call |
 | The server sent an HTTP error status (4xx or 5xx) | nothing, unless you ask: requests and httpx need `response.raise_for_status()`, aiohttp needs `ClientSession(raise_for_status=True)`. urllib raises `HTTPError` by itself | call `raise_for_status()` before parsing |
-| The body isn't JSON, such as an HTML error page or an empty body | `requests.JSONDecodeError`, `json.JSONDecodeError` from `parse_json` or httpx, or `aiohttp.ContentTypeError`. All but the last are `ValueError` subclasses | catch `ValueError` (and `ContentTypeError` with aiohttp) |
+| The body isn't JSON, such as an HTML error page or an empty body | `requests.JSONDecodeError`, `json.JSONDecodeError` from `parse_json` or httpx, or `aiohttp.ContentTypeError`. All but the last are `ValueError` subclasses. With aiohttp, an empty body labelled as JSON gives `None`, and `parse(None)` raises `InvalidResponse` | catch `ValueError` (and `ContentTypeError` with aiohttp) |
 | The server ran the method and it failed | an `Error` from `parse` | check with `isinstance` or `match` |
 | The JSON isn't a valid JSON-RPC response | `InvalidResponse` | catch `InvalidResponse` |
 | The server rejected a whole batch | one `Error` instead of an iterator | check `isinstance(data, dict)`, see [Batches](batches.md#edge-cases) |
