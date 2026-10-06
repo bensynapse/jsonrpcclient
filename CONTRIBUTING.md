@@ -3,6 +3,10 @@
 Bug reports and pull requests are welcome. For a bigger change, open an issue
 first so we can agree on the approach.
 
+Everyone who takes part in this project, in issues, pull requests or
+discussions, is expected to follow the
+[Code of Conduct](https://github.com/bensynapse/jsonrpcclient/blob/main/CODE_OF_CONDUCT.md).
+
 ## Setting up
 
 ```sh
