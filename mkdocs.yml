@@ -54,6 +54,10 @@ extra:
   unreleased: "4.1.0"
   pypi_version: "4.0.3"
   social_image: assets/social-card.png
+  # Ownership tokens for Google Search Console and Bing Webmaster Tools.
+  # Both services re-check them, so leave them in after verification.
+  google_site_verification: 5mHS0iCWy8mBpJ2XYFljYI1E2r6ew3nz55dVjZJAoZQ
+  bing_site_verification: 284F7E6020A3E99F2916C1E3DE4F175D
 plugins:
   - search
   - mkdocstrings:
