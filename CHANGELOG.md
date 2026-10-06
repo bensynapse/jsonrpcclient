@@ -1,5 +1,30 @@
 # jsonrpcclient Change Log
 
+## 4.0.4
+
+This release fixes the links on the PyPI page. The 4.0.3 page linked to the
+project's old website domain, which now belongs to someone else and serves a
+gambling site. Issue #229 was closed when the link changed in this repository,
+but PyPI kept showing the old link until a new release. With this release it is
+really fixed (#229, #230). The links now point to
+https://bensynapse.github.io/jsonrpcclient/ and
+https://github.com/bensynapse/jsonrpcclient.
+
+- `request_hex`, `request_random` and `request_uuid` are now safe to call from
+  several threads at once. Before, they could raise `ValueError: generator
+  already executing`, and free-threaded Python could crash. The iterators from
+  `jsonrpcclient.id_generators` are thread-safe too.
+- Type hints: `params` accepts a list. The `*_json` functions return `str`, and
+  `parse` has overloads, so a type checker knows a dict gives one response and
+  a list gives an iterator. `parse_json` used to be typed as `Any`. Code that
+  uses its result without an `isinstance` check now needs one to pass mypy.
+- Added `__version__`.
+- Needs Python 3.8 or later (was 3.6). Tested on 3.8 to 3.14 and on
+  free-threaded 3.14. Older Pythons will keep installing 4.0.3.
+- The documentation moved to https://bensynapse.github.io/jsonrpcclient/.
+- Releases now include both an sdist and a wheel. They are published from
+  GitHub Actions with build attestations.
+
 ## 4.0.3 (23 Feb, 2023)
 
 - Change build system interface to pyproject.toml.
@@ -14,9 +39,8 @@
 
 ## 4.0.0 (1 Sep, 2021)
 
-Complete rewrite and the usage has completely changed. Read about the changes
-at https://composed.blog/jsonrpcclient-4-changes or read the full documentation
-at https://www.jsonrpcclient.com/en/stable/
+Complete rewrite and the usage has completely changed. See the
+[documentation](https://bensynapse.github.io/jsonrpcclient/).
 
 ## 3.3.6 (21 Apr, 2020)
 
@@ -135,7 +159,7 @@ _The 3.x releases will support Python 3.5+ only._
 - Fix response log prefix
 
 ## 2.4.0 (Oct 5, 2016)
-- Add asychronous Zeromq client, see [blog post](https://bcb.github.io/jsonrpc/zeromq-async)
+- Add asynchronous ZeroMQ client.
 
 ## 2.3.0 (Sep 28, 2016)
 - Support websockets and aiohttp

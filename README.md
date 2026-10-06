@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://img.shields.io/pypi/v/jsonrpcclient.svg" alt="PyPI" />
-  <img src="https://github.com/explodinglabs/jsonrpcclient/actions/workflows/code-quality.yml/badge.svg" alt="Code Quality" />
-  <img src="https://coveralls.io/repos/github/explodinglabs/jsonrpcclient/badge.svg?branch=main" alt="Coverage Status" />
+  <a href="https://pypi.org/project/jsonrpcclient/"><img src="https://img.shields.io/pypi/v/jsonrpcclient.svg" alt="PyPI" /></a>
+  <a href="https://github.com/bensynapse/jsonrpcclient/actions/workflows/ci.yml"><img src="https://github.com/bensynapse/jsonrpcclient/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/pypi/pyversions/jsonrpcclient" alt="Python versions" />
   <img src="https://img.shields.io/pypi/dw/jsonrpcclient" alt="Downloads" />
-  <img src="https://img.shields.io/github/license/explodinglabs/jsonrpcclient" alt="License" />
+  <img src="https://img.shields.io/github/license/bensynapse/jsonrpcclient" alt="License" />
 </p>
 
 <p align="center">
-  <img alt="Jsonrpcclient Logo" src="https://github.com/explodinglabs/jsonrpcclient/blob/main/logo.png?raw=true" />
+  <img alt="Jsonrpcclient Logo" src="https://raw.githubusercontent.com/bensynapse/jsonrpcclient/main/logo.png" />
 </p>
 
 <p align="center">
@@ -15,45 +15,50 @@
 </p>
 
 <p align="center">
-  <a href="https://explodinglabs.com/jsonrpcclient/">Documentation</a> |
-  <a href="https://github.com/explodinglabs/jsonrpcclient/wiki">Developer Wiki</a>
+  <a href="https://bensynapse.github.io/jsonrpcclient/">Documentation</a> |
+  <a href="https://bensynapse.github.io/jsonrpcclient/examples/">Examples</a> |
+  <a href="https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md">Changelog</a>
 </p>
 
 https://github.com/user-attachments/assets/080861a5-0819-43ec-a9e2-f8ea7eb694f5
 
-## 🚀 Installation
+## Installation
 
 ```sh
 pip install jsonrpcclient
 ```
 
-## ⚒️ Usage
+It has no dependencies and supports Python 3.8 and later, including
+free-threaded builds.
+
+## Usage
 
 Generate a request:
 
 ```python
-from jsonrpcclient import request, parse
-
-req = request("ping")
-# => {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+>>> from jsonrpcclient import parse, request
+>>> request("ping")
+{'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
 ```
 
 Parse a response:
 
 ```python
-parsed = parse({"jsonrpc": "2.0", "result": "pong", "id": 1})
-# => Ok(result='pong', id=1)
+>>> parse({"jsonrpc": "2.0", "result": "pong", "id": 1})
+Ok(result='pong', id=1)
 ```
 
-> [!TIP]
-> For strings, use `request_json` and `parse_json`.
+For strings, use `request_json` and `parse_json`.
 
-## 📚 Documentation
+jsonrpcclient doesn't send anything itself. The
+[examples](https://bensynapse.github.io/jsonrpcclient/examples/) show it with
+requests, aiohttp, websockets and ZeroMQ.
 
-👉 Full documentation is at [explodinglabs.com/jsonrpcclient/](https://explodinglabs.com/jsonrpcclient/).
+## Documentation
 
-👉 See the [Wiki](https://github.com/explodinglabs/jsonrpcclient/wiki) for community-editable usage examples in various frameworks, libraries, and transport protocols.
+Full documentation is at
+[bensynapse.github.io/jsonrpcclient](https://bensynapse.github.io/jsonrpcclient/).
 
-## 📖 See Also
+## See also
 
-- [jsonrpcserver](https://github.com/explodinglabs/jsonrpcserver) – Process incoming JSON-RPC requests in Python
+- [jsonrpcserver](https://github.com/bensynapse/jsonrpcserver): process incoming JSON-RPC requests in Python

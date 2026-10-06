@@ -14,7 +14,7 @@ from .requests import (
 )
 from .responses import Error, Ok, parse, parse_json
 
-__version__ = "4.0.3"
+__version__ = "4.0.4"
 
 __all__ = [
     "Error",
