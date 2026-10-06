@@ -1,28 +1,58 @@
-"""Responses"""
+"""Parse JSON-RPC 2.0 responses into `Ok` and `Error`.
+
+`Ok`, `Error`, `InvalidResponse`, `parse` and `parse_json` are re-exported from
+the `jsonrpcclient` package. The `Response` type alias lives only here:
+`from jsonrpcclient.responses import Response`.
+"""
 
 import json
 from typing import Any, Dict, Iterator, List, Mapping, NamedTuple, Union, cast, overload
 
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
+"""What `parse` accepts: one response object, or a list of them for a batch."""
 
 
 class Ok(NamedTuple):
-    """Ok response"""
+    """A successful response.
+
+    A named tuple, so it also unpacks as `result, id = parsed`.
+
+    Examples:
+        >>> parse({"jsonrpc": "2.0", "result": "pong", "id": 1})
+        Ok(result='pong', id=1)
+    """
 
     result: Any
+    """The `result` member of the response, as the server sent it."""
     id: Any
+    """The id of the request this answers."""
 
     def __repr__(self) -> str:
         return f"Ok(result={self.result!r}, id={self.id!r})"
 
 
 class Error(NamedTuple):
-    """Error response"""
+    """An error response.
+
+    A named tuple of the members of the response's `error` object plus the id.
+    The library doesn't check the types of `code` and `message`; they are
+    whatever the server sent.
+
+    Examples:
+        >>> error = {"code": -32601, "message": "Method not found"}
+        >>> parse({"jsonrpc": "2.0", "error": error, "id": 1})
+        Error(code=-32601, message='Method not found', data=None, id=1)
+    """
 
     code: int
+    """The error code, for example -32601 for "Method not found"."""
     message: str
+    """A short description of the error."""
     data: Any
+    """Extra information from the server, or None if it didn't send any."""
     id: Any
+    """The id of the request this answers. None if the server couldn't read the
+    request's id, for example after a parse error."""
 
     def __repr__(self) -> str:
         return (
@@ -32,13 +62,20 @@ class Error(NamedTuple):
 
 
 Response = Union[Ok, Error]
+"""The type of one parsed response. Use it to annotate your own functions."""
 
 
 class InvalidResponse(KeyError, TypeError):
-    """The server's response isn't a valid JSON-RPC 2.0 response.
+    """Raised when a response isn't a valid JSON-RPC 2.0 response.
 
-    It subclasses KeyError and TypeError because earlier versions raised one of
-    those for a malformed response, so existing handlers still catch it.
+    The message says what is wrong, for example
+    `Invalid JSON-RPC response: missing 'id'`.
+
+    It subclasses `KeyError` and `TypeError` because versions before 4.1.0
+    raised one of those for a malformed response, so `except KeyError` and
+    `except TypeError` still catch it.
+
+    Added in 4.1.0.
     """
 
     def __str__(self) -> str:
@@ -51,13 +88,14 @@ def _type_name(value: object) -> str:
 
 
 def to_response(response: Dict[str, Any]) -> Response:
-    """Create an Ok or Error from one deserialized response object.
+    """Turn one deserialized response object into an `Ok` or an `Error`.
 
-    If the response has a non-null "error", it's an Error, even if it also has a
-    "result". JSON-RPC 2.0 doesn't allow both, but JSON-RPC 1.0 servers send
-    "result": null alongside an error.
+    Internal; use `parse`. If the response has a non-null "error", it's an
+    Error, even if it also has a "result". JSON-RPC 2.0 doesn't allow both, but
+    JSON-RPC 1.0 style servers send "result": null alongside an error.
 
-    Raises InvalidResponse if the response is malformed.
+    Raises:
+        InvalidResponse: If the response is malformed.
     """
     obj = cast(object, response)  # Callers may pass anything at runtime.
     if not isinstance(obj, Mapping):
@@ -108,13 +146,34 @@ def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]: ..
 def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
     """Parse a deserialized response, or a batch of them.
 
-    A dict gives one Ok or Error. A list (a batch) gives a lazy iterator of Ok
-    and Error: each item is parsed when you reach it, and the iterator can only
-    be used once. Call list() on it if you need the responses more than once.
-    Batch responses can come back in any order, so match them up by id.
+    A dict gives one `Ok` or `Error`. A list (a batch) gives a lazy iterator of
+    `Ok` and `Error`: each item is parsed when you reach it, and the iterator
+    can only be used once. Call `list()` on it if you need the responses more
+    than once. Batch responses can come back in any order, so match them up by
+    id.
 
-    Raises InvalidResponse (a KeyError and TypeError subclass) if a response is
-    malformed. For a batch, that happens when the iterator reaches the bad item.
+    If a response has a non-null `error`, it is an `Error`, even if it also has
+    a `result`.
+
+    Args:
+        deserialized: A response that has already been through `json.loads` (or
+            your HTTP library's `.json()`).
+
+    Returns:
+        An `Ok` or `Error` for a dict, or an iterator of them for a list.
+
+    Raises:
+        InvalidResponse: If a response is malformed. For a batch, this happens
+            when the iterator reaches the bad item. Subclasses `KeyError` and
+            `TypeError`.
+        TypeError: If `deserialized` is a `str`, `bytes` or `bytearray`. Use
+            `parse_json` for those.
+
+    Examples:
+        >>> parse({"jsonrpc": "2.0", "result": "pong", "id": 1})
+        Ok(result='pong', id=1)
+        >>> list(parse([{"jsonrpc": "2.0", "result": "pong", "id": 1}]))
+        [Ok(result='pong', id=1)]
     """
     if isinstance(deserialized, (str, bytes, bytearray)):
         raise TypeError("Use parse_json on strings")
@@ -132,6 +191,28 @@ def _parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
 def parse_json(
     response: Union[str, bytes, bytearray], **kwargs: Any
 ) -> Union[Response, Iterator[Response]]:
-    """Parse a JSON string. Same as parse(json.loads(response, **kwargs))."""
+    """Parse a response, or a batch of them, from a JSON string.
+
+    The same as `parse(json.loads(response, **kwargs))`, except that it doesn't
+    raise `TypeError` for a string.
+
+    Args:
+        response: The response body, as `str`, `bytes` or `bytearray`.
+        **kwargs: Passed to `json.loads`, for example `parse_float=Decimal`.
+
+    Returns:
+        An `Ok` or `Error` for a JSON object, or an iterator of them for a JSON
+            array.
+
+    Raises:
+        json.JSONDecodeError: If `response` isn't valid JSON. A `ValueError`
+            subclass.
+        InvalidResponse: If a response is malformed, including JSON that is
+            neither an object nor an array.
+
+    Examples:
+        >>> parse_json('{"jsonrpc": "2.0", "result": "pong", "id": 1}')
+        Ok(result='pong', id=1)
+    """
     deserialized: Deserialized = json.loads(response, **kwargs)
     return _parse(deserialized)
