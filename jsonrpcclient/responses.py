@@ -1,9 +1,7 @@
 """Responses"""
 
 import json
-from typing import Any, Dict, Iterable, List, NamedTuple, Union
-
-from .utils import compose
+from typing import Any, Dict, Iterator, List, NamedTuple, Union, overload
 
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
@@ -50,7 +48,19 @@ def to_response(response: Dict[str, Any]) -> Response:
     )
 
 
-def parse(deserialized: Deserialized) -> Union[Response, Iterable[Response]]:
+@overload
+def parse(deserialized: Dict[str, Any]) -> Response: ...
+
+
+@overload
+def parse(deserialized: List[Dict[str, Any]]) -> Iterator[Response]: ...
+
+
+@overload
+def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]: ...
+
+
+def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
     """Create a Response or list of Responses from a dict or list of dicts"""
     if isinstance(deserialized, str):
         raise TypeError("Use parse_json on strings")
@@ -61,4 +71,9 @@ def parse(deserialized: Deserialized) -> Union[Response, Iterable[Response]]:
     )
 
 
-parse_json = compose(parse, json.loads)
+def parse_json(
+    response: Union[str, bytes, bytearray], **kwargs: Any
+) -> Union[Response, Iterator[Response]]:
+    """Parse a JSON string. Same as parse(json.loads(response, **kwargs))."""
+    deserialized: Deserialized = json.loads(response, **kwargs)
+    return parse(deserialized)

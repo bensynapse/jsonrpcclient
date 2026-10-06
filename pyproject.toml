@@ -49,12 +49,15 @@ select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
 # mypy only accepts 3.10 or later here. pyright checks the 3.8 target.
 python_version = "3.10"
 strict = true
-files = ["jsonrpcclient"]
+files = ["jsonrpcclient", "tests"]
 
 [tool.pyright]
-include = ["jsonrpcclient"]
+include = ["jsonrpcclient", "tests"]
 pythonVersion = "3.8"
 typeCheckingMode = "strict"
+# Use "# pyright: ignore[...]" so mypy and pyright ignores are checked separately.
+enableTypeIgnoreComments = false
+reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -64,5 +67,6 @@ branch = true
 source = ["jsonrpcclient"]
 
 [tool.coverage.report]
+exclude_also = ["@overload"]
 fail_under = 100
 show_missing = true

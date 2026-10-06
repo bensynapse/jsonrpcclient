@@ -1,6 +1,7 @@
 """Test requests.py"""
 
-from typing import Any, Dict
+import json
+from typing import Any, Callable, Dict
 
 import pytest
 
@@ -8,7 +9,14 @@ from jsonrpcclient.requests import (
     notification,
     notification_json,
     request,
+    request_hex,
     request_json,
+    request_json_hex,
+    request_json_random,
+    request_json_uuid,
+    request_natural,
+    request_random,
+    request_uuid,
 )
 
 
@@ -87,3 +95,41 @@ def test_request_auto_iterating_id() -> None:
 
 def test_request_json() -> None:
     assert request_json("foo", id=1) == '{"jsonrpc": "2.0", "method": "foo", "id": 1}'
+
+
+def test_request_list_and_tuple_params() -> None:
+    assert request("sqrt", [1, 2], id=1)["params"] == [1, 2]
+    assert request("sqrt", (1, 2), id=1)["params"] == [1, 2]
+
+
+@pytest.mark.parametrize("func", [request_hex, request_random, request_uuid])
+def test_other_id_types(func: Callable[..., Dict[str, Any]]) -> None:
+    req = func("foo", [1])
+    assert req["params"] == [1]
+    assert isinstance(req["id"], str)
+    assert func("foo", id=5)["id"] == 5
+
+
+@pytest.mark.parametrize(
+    "func",
+    [request_json, request_json_hex, request_json_random, request_json_uuid],
+)
+def test_request_json_variants(func: Callable[..., str]) -> None:
+    assert json.loads(func("foo", {"a": 1}, id=7)) == {
+        "jsonrpc": "2.0",
+        "method": "foo",
+        "params": {"a": 1},
+        "id": 7,
+    }
+
+
+def test_notification_json_params() -> None:
+    assert json.loads(notification_json("foo", [1])) == {
+        "jsonrpc": "2.0",
+        "method": "foo",
+        "params": [1],
+    }
+
+
+def test_request_natural_is_request() -> None:
+    assert request_natural is request

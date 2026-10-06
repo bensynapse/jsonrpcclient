@@ -1,5 +1,6 @@
 """Test responses.py"""
 
+from decimal import Decimal
 from typing import Dict
 
 import pytest
@@ -41,9 +42,30 @@ def test_parse() -> None:
 
 def test_parse_string() -> None:
     with pytest.raises(TypeError) as exc:
-        parse('{"jsonrpc": "2.0", "result": "pong", "id": 1}')  # type: ignore
+        parse('{"jsonrpc": "2.0", "result": "pong", "id": 1}')  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]
     assert str(exc.value) == "Use parse_json on strings"
 
 
 def test_parse_json() -> None:
     assert parse_json('{"jsonrpc": "2.0", "result": "pong", "id": 1}') == Ok("pong", 1)
+
+
+def test_parse_json_bytes() -> None:
+    assert parse_json(b'{"jsonrpc": "2.0", "result": "pong", "id": 1}') == Ok("pong", 1)
+
+
+def test_parse_json_passes_kwargs_to_json_loads() -> None:
+    parsed = parse_json(
+        '{"jsonrpc": "2.0", "result": 1.5, "id": 1}', parse_float=Decimal
+    )
+    assert parsed == Ok(Decimal("1.5"), 1)
+
+
+def test_parse_batch() -> None:
+    parsed = parse(
+        [
+            {"jsonrpc": "2.0", "result": "pong", "id": 1},
+            {"jsonrpc": "2.0", "error": {"code": 1, "message": "foo"}, "id": 2},
+        ]
+    )
+    assert list(parsed) == [Ok("pong", 1), Error(1, "foo", None, 2)]
