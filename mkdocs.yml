@@ -1,0 +1,48 @@
+site_name: jsonrpcclient
+site_description: Create JSON-RPC requests and parse responses in Python
+site_url: https://bensynapse.github.io/jsonrpcclient/
+repo_url: https://github.com/bensynapse/jsonrpcclient
+repo_name: bensynapse/jsonrpcclient
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  logo: assets/logo.png
+  features:
+    - navigation.footer
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme)"
+      scheme: default
+      primary: "indigo"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: "indigo"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: "indigo"
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+plugins:
+  - search
+extra_css:
+  - assets/extra.css
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      check_paths: true
+nav:
+  - Home: index.md
+  - Requests: requests.md
+  - Responses: responses.md
+  - Examples: examples.md
+  - FAQ: faq.md
+  - Changelog: https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md
