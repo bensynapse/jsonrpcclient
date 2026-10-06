@@ -1,0 +1,5 @@
+aiohttp==3.14.4
+requests==2.34.2
+ujson==6.0.0
+websockets==17.2
+pyzmq==27.2.0
