@@ -115,6 +115,17 @@ Check for a missing id when you look up your requests' responses.
 
 ## Invalid responses in a batch
 
+An empty response array is invalid under
+[JSON-RPC 2.0](https://www.jsonrpc.org/specification#batch).
+`parse([])` and `parse_json("[]")` raise `InvalidResponse` immediately:
+
+```pycon
+>>> parse([])
+Traceback (most recent call last):
+    ...
+jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response: batch must not be empty
+```
+
 If one item in a batch response is malformed, `parse` raises
 `InvalidResponse` when the iterator reaches that item. The items before it
 have already been returned. See [Error handling](errors.md).

@@ -150,7 +150,7 @@ def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
     `Ok` and `Error`: each item is parsed when you reach it, and the iterator
     can only be used once. Call `list()` on it if you need the responses more
     than once. Batch responses can come back in any order, so match them up by
-    id.
+    id. An empty batch raises `InvalidResponse` immediately.
 
     If a response has a non-null `error`, it is an `Error`, even if it also has
     a `result`.
@@ -181,11 +181,11 @@ def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
 
 
 def _parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
-    return (
-        map(to_response, deserialized)
-        if isinstance(deserialized, list)
-        else to_response(deserialized)
-    )
+    if isinstance(deserialized, list):
+        if not deserialized:
+            raise InvalidResponse("Invalid JSON-RPC response: batch must not be empty")
+        return map(to_response, deserialized)
+    return to_response(deserialized)
 
 
 def parse_json(
