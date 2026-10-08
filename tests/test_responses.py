@@ -1,7 +1,7 @@
 """Test responses.py"""
 
 from decimal import Decimal
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, Union
 
 import pytest
 
@@ -77,6 +77,19 @@ def test_parse_batch() -> None:
         ]
     )
     assert list(parsed) == [Ok("pong", 1), Error(1, "foo", None, 2)]
+
+
+def test_parse_empty_batch() -> None:
+    with pytest.raises(InvalidResponse) as exc:
+        parse([])
+    assert str(exc.value) == "Invalid JSON-RPC response: batch must not be empty"
+
+
+@pytest.mark.parametrize("response", ["[]", b"[]", bytearray(b"[]")])
+def test_parse_json_empty_batch(response: Union[str, bytes, bytearray]) -> None:
+    with pytest.raises(InvalidResponse) as exc:
+        parse_json(response)
+    assert str(exc.value) == "Invalid JSON-RPC response: batch must not be empty"
 
 
 def test_error_wins_over_result() -> None:

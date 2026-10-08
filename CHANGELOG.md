@@ -11,6 +11,9 @@ for what to check when upgrading.
 
 ### Changed
 
+- `parse` and `parse_json` now raise `InvalidResponse` for an empty response
+  batch. They used to return an empty iterator and silently accept the invalid
+  reply.
 - If a response has both `result` and `error`, and `error` is not null,
   `parse` now returns an `Error`. It used to return `Ok(result=None)` and drop
   the server's error. JSON-RPC 2.0 doesn't allow both, but JSON-RPC 1.0 style
