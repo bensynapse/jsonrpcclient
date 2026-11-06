@@ -20,7 +20,7 @@
   <a href="https://github.com/bensynapse/jsonrpcclient/blob/main/CHANGELOG.md">Changelog</a>
 </p>
 
-https://github.com/user-attachments/assets/080861a5-0819-43ec-a9e2-f8ea7eb694f5
+[Watch the demo](https://github.com/user-attachments/assets/080861a5-0819-43ec-a9e2-f8ea7eb694f5)
 
 ## Installation
 

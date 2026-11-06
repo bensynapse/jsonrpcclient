@@ -1,6 +1,6 @@
 # jsonrpcclient Change Log
 
-## 4.0.4
+## 4.0.4 (2026-11-06)
 
 This release fixes the links on the PyPI page. The 4.0.3 page linked to the
 project's old website domain, which now belongs to someone else and serves a
