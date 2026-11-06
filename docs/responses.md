@@ -174,10 +174,8 @@ Traceback (most recent call last):
 jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response at index 1 of the batch: missing 'id'
 ```
 
-!!! info "New in 4.1.0"
-    `InvalidResponse` was added in 4.1.0. Earlier versions raised a plain
-    `KeyError` or `TypeError`, so `InvalidResponse` subclasses both, and code
-    that catches either of those still works.
+`InvalidResponse` is a `ValueError`. It was added in 4.1.0, and until 5.0 it
+subclassed `KeyError` and `TypeError` instead.
 
 [Error handling](errors.md) puts this together with transport errors and
 untrusted input.

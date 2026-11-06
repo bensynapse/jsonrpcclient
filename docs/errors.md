@@ -15,7 +15,7 @@ part, reading the response. Your transport library handles the rest.
 | The server sent an HTTP error status (4xx or 5xx) | nothing, unless you ask: requests and httpx need `response.raise_for_status()`, aiohttp needs `ClientSession(raise_for_status=True)`. urllib raises `HTTPError` by itself | call `raise_for_status()` before parsing |
 | The body isn't JSON, such as an HTML error page or an empty body | `requests.JSONDecodeError`, `json.JSONDecodeError` from `parse_json` or httpx, or `aiohttp.ContentTypeError`. All but the last are `ValueError` subclasses. With aiohttp, an empty body labelled as JSON gives `None`, and `parse(None)` raises `InvalidResponse` | catch `ValueError` (and `ContentTypeError` with aiohttp) |
 | The server ran the method and it failed | an `Error` from `parse` | check with `isinstance` or `match` |
-| The JSON isn't a valid JSON-RPC response | `InvalidResponse` | catch `InvalidResponse` |
+| The JSON isn't a valid JSON-RPC response | `InvalidResponse`, also a `ValueError` | catch `InvalidResponse`, or `ValueError` for this and the row above |
 | The server rejected a whole batch | one `Error` instead of a list | check `isinstance(data, dict)`, see [Batches](batches.md#edge-cases) |
 | The request was a notification | no body at all | don't parse, see [Notifications](notifications.md) |
 
@@ -109,10 +109,25 @@ response. Perhaps it has no `id`, or neither `result` nor `error`. Perhaps
 its `error` isn't an object with `code` and `message`, or the value isn't an
 object at all. The message says which.
 
-!!! info "New in 4.1.0"
-    Earlier versions raised a plain `KeyError` or `TypeError` here.
-    `InvalidResponse` subclasses both, so old `except KeyError` and
-    `except TypeError` clauses still catch it.
+`InvalidResponse` is a `ValueError`, like `json.JSONDecodeError`. So one
+`except ValueError` around `parse_json` catches both a body that isn't JSON
+and one that isn't JSON-RPC:
+
+```pycon
+>>> from jsonrpcclient import parse_json
+>>> for body in ["<html>", '{"jsonrpc": "2.0", "id": 1}']:
+...     try:
+...         parse_json(body)
+...     except ValueError as exc:
+...         print(type(exc).__name__)
+JSONDecodeError
+InvalidResponse
+```
+
+!!! info "Changed in 5.0"
+    In 4.1 and later 4.x releases, `InvalidResponse` subclassed `KeyError` and
+    `TypeError`, which 4.0 raised. In 5.0 it's a `ValueError` only, so
+    `except KeyError` and `except TypeError` no longer catch it.
 
 `parse` also raises a plain `TypeError` if you pass it a string or bytes.
 That's a bug in the calling code, not a bad response, so it isn't an

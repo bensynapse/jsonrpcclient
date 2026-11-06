@@ -128,12 +128,29 @@ def test_invalid_response(response: Any, message: str) -> None:
     assert str(exc.value) == f"Invalid JSON-RPC response: {message}"
 
 
+def test_invalid_response_is_a_value_error() -> None:
+    with pytest.raises(ValueError):
+        parse({"jsonrpc": "2.0", "result": 1})
+
+
 @pytest.mark.parametrize("old_exception", [KeyError, TypeError])
-def test_invalid_response_is_caught_by_old_handlers(
+def test_invalid_response_is_no_longer_a_key_or_type_error(
     old_exception: type[Exception],
 ) -> None:
-    with pytest.raises(old_exception):
-        parse({"jsonrpc": "2.0", "result": 1})
+    assert not issubclass(InvalidResponse, old_exception)
+
+
+def test_one_except_value_error_catches_bad_json_and_bad_json_rpc() -> None:
+    for body in ["<html>", '{"jsonrpc": "2.0"}']:
+        with pytest.raises(ValueError):
+            parse_json(body)
+
+
+def test_invalid_response_message_is_not_quoted() -> None:
+    assert str(InvalidResponse("Invalid JSON-RPC response: x")) == (
+        "Invalid JSON-RPC response: x"
+    )
+    assert repr(InvalidResponse("x")) == "InvalidResponse('x')"
 
 
 def test_parse_json_non_object_message() -> None:
