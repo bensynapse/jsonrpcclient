@@ -75,7 +75,7 @@ jobs:
           else
             python .github/scripts/build_docs_site.py
           fi
-      - run: python -m playwright install --with-deps chromium
+      - run: python -m playwright install chromium
         # It usually takes under 30 seconds, but once hung for over 10 minutes.
         timeout-minutes: 5
       - name: Download axe-core and check its hash
