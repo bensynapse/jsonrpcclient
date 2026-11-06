@@ -25,6 +25,6 @@ batch: list[dict[str, Any]] = [
         "id": 2,
     },
 ]
-for response in parse(batch):  # Iterator[Ok | Error]
+for response in parse(batch):  # list[Ok | Error]
     print(describe(response))
 print(result_of({"jsonrpc": "2.0", "result": 5, "id": 3}))

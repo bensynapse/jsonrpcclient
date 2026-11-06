@@ -3,7 +3,6 @@
 Each line shows what a user of the library should see from a type checker.
 """
 
-from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
 
 from jsonrpcclient import (
@@ -43,10 +42,10 @@ if TYPE_CHECKING:
     # A plain string is not valid params.
     request("sqrt", params="abc")  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
-    # parse knows a dict gives one response and a list gives an iterator.
+    # parse knows a dict gives one response and a list gives a list.
     assert_type(parse({"jsonrpc": "2.0", "result": 1, "id": 1}), Ok | Error)
-    assert_type(parse([{"jsonrpc": "2.0", "result": 1, "id": 1}]), Iterator[Response])
-    assert_type(parse_json("{}"), Ok | Error | Iterator[Response])
+    assert_type(parse([{"jsonrpc": "2.0", "result": 1, "id": 1}]), list[Response])
+    assert_type(parse_json("{}"), Ok | Error | list[Response])
 
     parsed = parse({"jsonrpc": "2.0", "result": 1, "id": 1})
     if isinstance(parsed, Ok):

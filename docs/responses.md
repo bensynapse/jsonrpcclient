@@ -94,7 +94,7 @@ A type checker needs one of these checks before you use `.result`. See
 
 ## Batch responses
 
-Parsing a list gives an iterator of responses, which you match to your
+Parsing a list gives a list of responses, which you match to your
 requests by id:
 
 ```pycon
@@ -164,7 +164,15 @@ Traceback (most recent call last):
 jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response: expected an object, got str
 ```
 
-In a batch, an invalid item raises when the iterator reaches it.
+In a batch, `parse` checks every item before it returns. The message gives
+the index of the first bad one:
+
+```pycon
+>>> parse([{"jsonrpc": "2.0", "result": "pong", "id": 1}, {"jsonrpc": "2.0"}])
+Traceback (most recent call last):
+    ...
+jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response at index 1 of the batch: missing 'id'
+```
 
 !!! info "New in 4.1.0"
     `InvalidResponse` was added in 4.1.0. Earlier versions raised a plain

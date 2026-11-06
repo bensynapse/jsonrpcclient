@@ -6,7 +6,7 @@ the `jsonrpcclient` package. The `Response` type alias lives only here:
 """
 
 import json
-from collections.abc import Iterator, Mapping
+from collections.abc import Mapping
 from typing import Any, NamedTuple, cast, overload
 
 Deserialized = dict[str, Any] | list[dict[str, Any]]
@@ -88,37 +88,39 @@ def _type_name(value: object) -> str:
     return "null" if value is None else type(value).__name__
 
 
-def to_response(response: dict[str, Any]) -> Response:
+def _invalid(reason: str, index: int | None) -> InvalidResponse:
+    where = "" if index is None else f" at index {index} of the batch"
+    return InvalidResponse(f"Invalid JSON-RPC response{where}: {reason}")
+
+
+def to_response(response: dict[str, Any], index: int | None = None) -> Response:
     """Turn one deserialized response object into an `Ok` or an `Error`.
 
     Internal; use `parse`. If the response has a non-null "error", it's an
     Error, even if it also has a "result". JSON-RPC 2.0 doesn't allow both, but
     JSON-RPC 1.0 style servers send "result": null alongside an error.
 
+    Args:
+        response: One response object.
+        index: Its position in a batch, for the error message.
+
     Raises:
         InvalidResponse: If the response is malformed.
     """
     obj = cast(object, response)  # Callers may pass anything at runtime.
     if not isinstance(obj, Mapping):
-        raise InvalidResponse(
-            f"Invalid JSON-RPC response: expected an object, got {_type_name(obj)}"
-        )
+        raise _invalid(f"expected an object, got {_type_name(obj)}", index)
     checked = cast("Mapping[str, Any]", obj)
     if "id" not in checked:
-        raise InvalidResponse("Invalid JSON-RPC response: missing 'id'")
+        raise _invalid("missing 'id'", index)
     error: object = checked.get("error")
     if error is not None:
         if not isinstance(error, Mapping):
-            raise InvalidResponse(
-                "Invalid JSON-RPC response: 'error' must be an object, "
-                f"got {_type_name(error)}"
-            )
+            raise _invalid(f"'error' must be an object, got {_type_name(error)}", index)
         error_obj = cast("Mapping[str, Any]", error)
         for member in ("code", "message"):
             if member not in error_obj:
-                raise InvalidResponse(
-                    f"Invalid JSON-RPC response: 'error' is missing '{member}'"
-                )
+                raise _invalid(f"'error' is missing '{member}'", index)
         return Error(
             error_obj["code"],
             error_obj["message"],
@@ -127,9 +129,7 @@ def to_response(response: dict[str, Any]) -> Response:
         )
     if "result" in checked:
         return Ok(checked["result"], checked["id"])
-    raise InvalidResponse(
-        "Invalid JSON-RPC response: needs a 'result' or a non-null 'error'"
-    )
+    raise _invalid("needs a 'result' or a non-null 'error'", index)
 
 
 @overload
@@ -137,21 +137,23 @@ def parse(deserialized: dict[str, Any]) -> Response: ...
 
 
 @overload
-def parse(deserialized: list[dict[str, Any]]) -> Iterator[Response]: ...
+def parse(deserialized: list[dict[str, Any]]) -> list[Response]: ...
 
 
 @overload
-def parse(deserialized: Deserialized) -> Response | Iterator[Response]: ...
+def parse(deserialized: Deserialized) -> Response | list[Response]: ...
 
 
-def parse(deserialized: Deserialized) -> Response | Iterator[Response]:
+def parse(deserialized: Deserialized) -> Response | list[Response]:
     """Parse a deserialized response, or a batch of them.
 
-    A dict gives one `Ok` or `Error`. A list (a batch) gives a lazy iterator of
-    `Ok` and `Error`: each item is parsed when you reach it, and the iterator
-    can only be used once. Call `list()` on it if you need the responses more
-    than once. Batch responses can come back in any order, so match them up by
-    id. An empty batch raises `InvalidResponse` immediately.
+    A dict gives one `Ok` or `Error`. A list (a batch) gives a list of `Ok` and
+    `Error`, in the order the server sent them. Every item is checked before
+    `parse` returns. Batch responses can come back in any order, so match them
+    up by id. An empty batch raises `InvalidResponse`.
+
+    Changed in 5.0: a batch gives a list. 4.x gave a one-pass iterator, which
+    raised for a bad item only when the loop reached it.
 
     If a response has a non-null `error`, it is an `Error`, even if it also has
     a `result`.
@@ -161,11 +163,11 @@ def parse(deserialized: Deserialized) -> Response | Iterator[Response]:
             your HTTP library's `.json()`).
 
     Returns:
-        An `Ok` or `Error` for a dict, or an iterator of them for a list.
+        An `Ok` or `Error` for a dict, or a list of them for a list.
 
     Raises:
-        InvalidResponse: If a response is malformed. For a batch, this happens
-            when the iterator reaches the bad item. Subclasses `KeyError` and
+        InvalidResponse: If a response is malformed. For a batch, the message
+            gives the index of the first bad item. Subclasses `KeyError` and
             `TypeError`.
         TypeError: If `deserialized` is a `str`, `bytes` or `bytearray`. Use
             `parse_json` for those.
@@ -173,7 +175,7 @@ def parse(deserialized: Deserialized) -> Response | Iterator[Response]:
     Examples:
         >>> parse({"jsonrpc": "2.0", "result": "pong", "id": 1})
         Ok(result='pong', id=1)
-        >>> list(parse([{"jsonrpc": "2.0", "result": "pong", "id": 1}]))
+        >>> parse([{"jsonrpc": "2.0", "result": "pong", "id": 1}])
         [Ok(result='pong', id=1)]
     """
     if isinstance(deserialized, (str, bytes, bytearray)):
@@ -181,17 +183,17 @@ def parse(deserialized: Deserialized) -> Response | Iterator[Response]:
     return _parse(deserialized)
 
 
-def _parse(deserialized: Deserialized) -> Response | Iterator[Response]:
+def _parse(deserialized: Deserialized) -> Response | list[Response]:
     if isinstance(deserialized, list):
         if not deserialized:
             raise InvalidResponse("Invalid JSON-RPC response: batch must not be empty")
-        return map(to_response, deserialized)
+        return [to_response(item, index) for index, item in enumerate(deserialized)]
     return to_response(deserialized)
 
 
 def parse_json(
     response: str | bytes | bytearray, **kwargs: Any
-) -> Response | Iterator[Response]:
+) -> Response | list[Response]:
     """Parse a response, or a batch of them, from a JSON string.
 
     The same as `parse(json.loads(response, **kwargs))`, except that it doesn't
@@ -202,7 +204,7 @@ def parse_json(
         **kwargs: Passed to `json.loads`, for example `parse_float=Decimal`.
 
     Returns:
-        An `Ok` or `Error` for a JSON object, or an iterator of them for a JSON
+        An `Ok` or `Error` for a JSON object, or a list of them for a JSON
             array.
 
     Raises:
