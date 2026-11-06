@@ -37,7 +37,9 @@ def test_build_send_and_read_one_response() -> None:
         assert parsed.result == 5
     else:
         raise AssertionError(parsed)
-    result, id = parse({"jsonrpc": "2.0", "result": 5, "id": 1})
+    ok = parse({"jsonrpc": "2.0", "result": 5, "id": 1})
+    assert isinstance(ok, Ok)
+    result, id = ok
     assert (result, id) == (5, 1)
 
 
