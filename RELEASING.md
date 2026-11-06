@@ -35,7 +35,8 @@ Settings → Environments → pypi.
      yet": `## 4.1.0 (2026-10-20)`.
    - The `unreleased` and `pypi_version` lines under `extra` in mkdocs.yml are
      deleted. They show the "not on PyPI yet" banner on every docs page.
-     Merging this redeploys the docs, so merge it just before you tag.
+     The docs deploy when you push the tag, so merging this changes nothing
+     users see until then.
    - The paragraph under "Install" in README.md that says the version isn't
      released yet is deleted. The README becomes the PyPI page.
 
@@ -74,3 +75,10 @@ A failed run can be re-run from the Actions tab once the cause is fixed. If the
 tag itself was wrong, delete it locally and on GitHub
 (`git push origin :refs/tags/v4.0.4`) before tagging again. Never delete a tag
 whose version reached PyPI.
+
+## Docs
+
+The docs site deploys from `.github/workflows/docs.yml` when a release tag is
+pushed, so it always describes the version on PyPI. To publish a docs-only fix
+between releases, run the Docs workflow by hand on main. If main is ahead of
+PyPI by then, set `unreleased` in mkdocs.yml first, so a banner says so.
