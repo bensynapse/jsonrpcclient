@@ -16,9 +16,8 @@ process (see [Ids](ids.md)). Two threads calling `request` at the same time
 always get different ids. The iterators in `jsonrpcclient.id_generators` are
 thread-safe too, so you can share one between threads.
 
-`parse` and `parse_json` keep no state. The only thing to watch is the lazy
-iterator that `parse` returns for a batch: don't consume one iterator from
-two threads. Call `list()` on it first if you need to share the responses.
+`parse` and `parse_json` keep no state. A batch comes back as a plain list,
+which threads can read at the same time.
 
 !!! info "New in 4.0.4"
     Before 4.0.4, `request_hex`, `request_random` and `request_uuid` could

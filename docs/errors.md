@@ -16,7 +16,7 @@ part, reading the response. Your transport library handles the rest.
 | The body isn't JSON, such as an HTML error page or an empty body | `requests.JSONDecodeError`, `json.JSONDecodeError` from `parse_json` or httpx, or `aiohttp.ContentTypeError`. All but the last are `ValueError` subclasses. With aiohttp, an empty body labelled as JSON gives `None`, and `parse(None)` raises `InvalidResponse` | catch `ValueError` (and `ContentTypeError` with aiohttp) |
 | The server ran the method and it failed | an `Error` from `parse` | check with `isinstance` or `match` |
 | The JSON isn't a valid JSON-RPC response | `InvalidResponse` | catch `InvalidResponse` |
-| The server rejected a whole batch | one `Error` instead of an iterator | check `isinstance(data, dict)`, see [Batches](batches.md#edge-cases) |
+| The server rejected a whole batch | one `Error` instead of a list | check `isinstance(data, dict)`, see [Batches](batches.md#edge-cases) |
 | The request was a notification | no body at all | don't parse, see [Notifications](notifications.md) |
 
 ## A complete example

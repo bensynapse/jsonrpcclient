@@ -76,7 +76,7 @@ def test_parse_batch() -> None:
             {"jsonrpc": "2.0", "error": {"code": 1, "message": "foo"}, "id": 2},
         ]
     )
-    assert list(parsed) == [Ok("pong", 1), Error(1, "foo", None, 2)]
+    assert parsed == [Ok("pong", 1), Error(1, "foo", None, 2)]
 
 
 def test_parse_empty_batch() -> None:
@@ -149,14 +149,34 @@ def test_parse_bytes() -> None:
     assert str(exc.value) == "Use parse_json on strings"
 
 
-def test_parse_batch_is_one_pass() -> None:
+def test_parse_batch_is_a_list() -> None:
     batch = parse([{"result": 1, "id": 1}, {"result": 2, "id": 2}])
-    assert list(batch) == [Ok(1, 1), Ok(2, 2)]
-    assert list(batch) == []
+    assert isinstance(batch, list)
+    assert batch == [Ok(1, 1), Ok(2, 2)]
+    assert list(batch) == list(batch)
+    assert batch[1] == Ok(2, 2)
+    assert len(batch) == 2
 
 
-def test_parse_batch_invalid_item_raises_when_reached() -> None:
-    batch = parse([{"result": 1, "id": 1}, {"bogus": 1}])
-    assert next(batch) == Ok(1, 1)
-    with pytest.raises(InvalidResponse):
-        next(batch)
+def test_parse_json_batch_is_a_list() -> None:
+    assert parse_json('[{"result": 1, "id": 1}]') == [Ok(1, 1)]
+
+
+@pytest.mark.parametrize(
+    "batch,message",
+    [
+        (
+            [{"result": 1, "id": 1}, {"bogus": 1}],
+            "at index 1 of the batch: missing 'id'",
+        ),
+        ([None], "at index 0 of the batch: expected an object, got null"),
+        (
+            [{"result": 1, "id": 1}, {"result": 2, "id": 2}, {"error": "x", "id": 3}],
+            "at index 2 of the batch: 'error' must be an object, got str",
+        ),
+    ],
+)
+def test_parse_batch_checks_every_item_up_front(batch: list[Any], message: str) -> None:
+    with pytest.raises(InvalidResponse) as exc:
+        parse(batch)
+    assert str(exc.value) == f"Invalid JSON-RPC response {message}"

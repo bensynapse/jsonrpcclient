@@ -20,7 +20,7 @@ Build each request as usual and put them in a list:
 
 ## Reading the responses
 
-`parse` on a list gives an iterator of `Ok` and `Error`. The server can send
+`parse` on a list gives a list of `Ok` and `Error`. The server can send
 the responses in any order, so match them to your requests by id. This example
 sends three requests and a notification to a test server that knows `ping`
 and `add` but not `divide`:
@@ -57,9 +57,12 @@ for request_id in sorted(by_id):
 
 The notification gets no response, so there are three, not four.
 
-The iterator is lazy: each response is parsed when you reach it, and you can
-go through it only once. Call `list()` on it, or build a dict as above, if
-you need the responses more than once.
+`parse` checks every response in the batch before it returns, and the list
+can be read as often as you like.
+
+!!! info "Changed in 5.0"
+    4.x returned a lazy iterator, which could be read only once and raised
+    for a bad item only when the loop reached it.
 
 ## Edge cases
 
@@ -127,5 +130,5 @@ jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response: batch must n
 ```
 
 If one item in a batch response is malformed, `parse` raises
-`InvalidResponse` when the iterator reaches that item. The items before it
-have already been returned. See [Error handling](errors.md).
+`InvalidResponse` before it returns anything, and the message gives the
+index of the bad item. See [Error handling](errors.md).

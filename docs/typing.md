@@ -15,11 +15,11 @@ typing examples with mypy and pyright in strict mode.
 | You pass | You get |
 |---|---|
 | a `dict` | `Ok | Error` |
-| a `list` (a batch) | `Iterator[Ok | Error]` |
+| a `list` (a batch) | `list[Ok | Error]` |
 | something typed `Any` | `Any` |
 
 `parse_json` takes a string, so a type checker can't tell one response from a
-batch. It returns `Ok | Error | Iterator[Ok | Error]`.
+batch. It returns `Ok | Error | list[Ok | Error]`.
 
 !!! info "New in 4.0.4"
     Before 4.0.4, `parse_json` was typed as returning `Any`, and `parse` had
