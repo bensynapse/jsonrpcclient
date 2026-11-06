@@ -1,8 +1,97 @@
 ---
-description: Upgrade jsonrpcclient from 3.x to 4.x, and from 4.0 to 4.1. Side-by-side examples, removed features, and the silent request(url, method) pitfall.
+description: Upgrade jsonrpcclient from 4.x to 5.0, from 3.x to 4.x, and from 4.0 to 4.1. Every 5.0 change with its replacement, side-by-side examples, and the request(url, method) pitfall.
 ---
 
 # Migration
+
+## From 4.x to 5.0
+
+Code that builds requests with `request` or `notification`, sends them, and
+reads one response with `parse` or `parse_json` keeps working. A test in the
+repository pins that. The rest of this section lists every change, so you can
+check your own code against it.
+
+Upgrade to 4.2.0 first and run your tests. It gives a `FutureWarning` for the
+changes it can detect: a bad `method` or `params`, `parse_json(strict=...)`,
+and an old Python. The two changes it can't detect are marked below.
+
+### Python 3.11 or later
+
+5.0 needs Python 3.11 or later. 3.8, 3.9 and 3.10 have reached end of life.
+On an older Python, `pip install jsonrpcclient` keeps installing 4.x.
+
+### Batches are lists
+
+`parse` on a list, and `parse_json` on a JSON array, return a `list` of `Ok`
+and `Error`. 4.x returned a lazy iterator.
+
+| 4.x | 5.0 |
+|---|---|
+| `next(parse(batch))` | `parse(batch)[0]`, or `next(iter(parse(batch)))` |
+| `list(parse(batch))` to read it twice | `parse(batch)`, which can be read as often as you like |
+| a bad item raises when the loop reaches it, after the items before it | `parse` raises before it returns, and the message gives the index |
+| `Iterator[Response]` in type hints | `list[Response]` |
+
+Loops, `list()` and dict comprehensions over the result work as before.
+4.2.0 can't warn about `next()` on a batch, so search your code for it.
+
+### InvalidResponse is a ValueError
+
+`InvalidResponse` subclasses `ValueError`. In 4.1 and 4.2 it subclassed
+`KeyError` and `TypeError`, which 4.0 raised for a malformed response.
+
+| 4.x | 5.0 |
+|---|---|
+| `except KeyError:` around `parse` | `except InvalidResponse:` |
+| `except TypeError:` around `parse` | `except InvalidResponse:`. A str or bytes passed to `parse` still raises `TypeError` |
+| `except (ValueError, InvalidResponse):` around `parse_json` | `except ValueError:` catches both |
+
+4.2.0 can't warn about this either. Search for `except KeyError` and
+`except TypeError` near `parse` and `parse_json`.
+
+### Requests check method and params
+
+`request`, `notification` and their variants raise `TypeError` when `method`
+isn't a string, or `params` isn't a list, tuple, dict or None. 4.x sent the
+request anyway, and the server rejected it.
+
+| 4.x | 5.0 |
+|---|---|
+| `request("sqrt", "16")` sent `"params": "16"` | `TypeError`. Use `request("sqrt", [16])` |
+| `request("get", "")` or `request("get", 0)` sent no params | `TypeError`. Leave `params` out, or pass `None` |
+| `request(123)` sent `"method": 123` | `TypeError`. Use a string |
+
+A rejected request uses up no id.
+
+### Requests are TypedDicts
+
+The request functions are typed as returning `Request`, and `notification`
+as returning `Notification`. At run time they're the same dicts as before.
+This only affects type checking.
+
+| 4.x | 5.0 |
+|---|---|
+| `req: dict[str, Any] = request("ping")` | `req: Request = request("ping")`, or `Mapping[str, Any]` |
+| `batch: list[dict[str, Any]] = [request(...), notification(...)]` | `batch: list[Request \| Notification] = [...]` |
+| `request(...)["params"]` | `request(...).get("params")`, since `params` is left out when empty |
+| `req["extra"] = 1` | a type error. Copy it into a `dict` first: `{**req, "extra": 1}` |
+
+### parse_json's strict keyword
+
+| 4.x | 5.0 |
+|---|---|
+| `parse_json(text, strict=False)` passed `strict` to `json.loads`, which then allowed control characters in strings | `parse(json.loads(text, strict=False))` |
+| `parse_json(text, strict=True)`, the `json.loads` default | leave it out. `strict=True` now turns on the strict mode below |
+
+Other keyword arguments, such as `parse_float`, still go to `json.loads`.
+
+### New
+
+- `match_responses(batch, parse(reply))` matches a batch's responses to its
+  requests by id. See [Batches](batches.md#reading-the-responses).
+- `parse(..., strict=True)` checks every JSON-RPC 2.0 rule for a response.
+  See [Responses](responses.md#strict-mode).
+- `Request` and `Notification` types. See [Typing](typing.md#requests-are-typeddicts).
 
 ## From 3.x to 4.x
 

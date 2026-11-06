@@ -55,6 +55,7 @@ For JSON strings, use `request_json` and `parse_json`.
   aiohttp, websockets and ZeroMQ.
 - [API reference](reference.md): every function and class, with signatures.
 - [Typing](typing.md) and [threads and async](threads.md).
-- [Migrating from 3.x](migration.md): the 4.x API is completely different.
+- [Migration](migration.md): from 4.x to 5.0, and from 3.x, whose API is
+  completely different.
 - [jsonrpcserver](https://github.com/bensynapse/jsonrpcserver): the same
   idea for the server side.

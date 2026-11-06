@@ -2,6 +2,77 @@
 
 Dates are release dates.
 
+## 5.0.0rc1 (not released yet)
+
+The first release candidate of 5.0. `pip install --pre jsonrpcclient` installs
+it. `pip install jsonrpcclient` keeps installing 4.x until 5.0.0.
+[Migration](https://github.com/bensynapse/jsonrpcclient/blob/main/docs/migration.md#from-4x-to-50)
+lists every change with its replacement, and
+[#252](https://github.com/bensynapse/jsonrpcclient/issues/252) tracks the
+release. 4.x gets fixes on the `release/4.x` branch.
+
+Code that builds requests with `request` or `notification`, sends them, and
+reads one response with `parse` or `parse_json` keeps working. A test pins
+that.
+
+### Added
+
+- `match_responses(batch, parse(reply))` matches a batch's responses to its
+  requests by id and returns a dict in request order. It gives every request
+  the error when the server rejects the whole batch. It fills requests the
+  server couldn't read with their null-id errors. Anything it can't match
+  raises `InvalidResponse`.
+- `parse(..., strict=True)` and `parse_json(..., strict=True)` check the
+  JSON-RPC 2.0 rules the default skips. These are `"jsonrpc": "2.0"`,
+  exactly one of `result` and `error`, an int `error.code`, a str
+  `error.message`, and an id that's a string, a number or null.
+- `Request` and `Notification`, `TypedDict`s for what `request` and
+  `notification` return. At run time they're still plain dicts.
+
+### Changed
+
+- `parse` on a list, and `parse_json` on a JSON array, return a `list`
+  instead of a one-pass iterator. Every item is checked before they return,
+  and a bad item's message gives its index. `next(parse(batch))` no longer
+  works. Use `parse(batch)[0]`.
+- `InvalidResponse` subclasses `ValueError`, like `json.JSONDecodeError`. It
+  no longer subclasses `KeyError` and `TypeError`, so `except KeyError` and
+  `except TypeError` don't catch it any more.
+- `request`, `notification` and their variants raise `TypeError` when
+  `method` isn't a str, or `params` isn't a list, tuple, dict or None. 4.x
+  sent the request anyway. A rejected request uses up no id.
+- `parse_json`'s `strict` keyword is the new strict mode. 4.x passed it on to
+  `json.loads`. `parse(json.loads(text, strict=False))` does what it did.
+- The request functions are typed as returning `Request` or `Notification`,
+  not `dict[str, Any]`. mypy doesn't accept those where `dict[str, Any]` is
+  expected. Annotate with `Request`, `Notification` or `Mapping[str, Any]`.
+
+### Removed
+
+- Python 3.8, 3.9 and 3.10, which have reached end of life. 5.0 needs Python
+  3.11 or later. Older Pythons keep installing 4.x.
+
+## 4.2.0 (2026-11-06)
+
+Warnings about what 5.0 changes, so an upgrade doesn't surprise you. Nothing
+else changes. Each is a `FutureWarning`, which Python shows by default.
+
+- A `method` that isn't a string, or `params` that aren't a list, tuple or
+  dict, warn. 4.x sends the request anyway. 5.0 raises `TypeError`. This
+  covers `request`, `notification` and their variants.
+- `parse_json(..., strict=...)` warns. 4.x passes `strict` on to
+  `json.loads`. In 5.0 it turns on stricter checks of the response instead.
+  `parse(json.loads(text, strict=False))` keeps the `json.loads` option.
+- Importing jsonrpcclient on Python 3.8, 3.9 or 3.10 warns once. 5.0 needs
+  Python 3.11 or later, and pip keeps installing 4.x on older Pythons.
+
+Two more changes can't be detected at run time, so they don't warn. In 5.0
+`parse` on a batch returns a list, not an iterator, so `next(parse(batch))`
+stops working. And `InvalidResponse` stops subclassing `KeyError` and
+`TypeError`. The
+[5.0 plan](https://github.com/bensynapse/jsonrpcclient/blob/main/plans/5.0.md)
+lists everything that changes.
+
 ## 4.1.0 (2026-11-06)
 
 See [Migration](https://bensynapse.github.io/jsonrpcclient/migration/#from-40-to-41)
