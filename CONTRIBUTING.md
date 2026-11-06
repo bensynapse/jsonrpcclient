@@ -40,7 +40,7 @@ output accurate:
   blocks are doctests, and a block followed by a `text title="Output"` block
   must print exactly that. HTML comments before a block can mark it as needing
   a package (`<!-- requires: requests -->`), a test server on port 8000
-  (`<!-- server -->`) or a newer Python (`<!-- min-python: 3.10 -->`). The
+  (`<!-- server -->`) or a newer Python (`<!-- min-python: 3.12 -->`). The
   docstring at the top of that file lists them all.
 - `docs/examples/check_examples.py` runs the transport examples in
   `docs/examples/` against test servers. A new example file needs a line in
@@ -60,5 +60,5 @@ python docs/examples/check_examples.py
 
 - Keep each pull request to one change, with a test for it.
 - Add a line to CHANGELOG.md if users will notice the change.
-- The library has no dependencies and supports Python 3.8 and later. Please
+- The library has no dependencies and supports Python 3.11 and later. Please
   keep it that way.

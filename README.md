@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://pypi.org/project/jsonrpcclient/"><img src="https://img.shields.io/pypi/v/jsonrpcclient.svg" alt="PyPI version" /></a>
   <a href="https://github.com/bensynapse/jsonrpcclient/actions/workflows/ci.yml"><img src="https://github.com/bensynapse/jsonrpcclient/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://bensynapse.github.io/jsonrpcclient/#install"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue" alt="Python 3.8 to 3.14" /></a>
+  <a href="https://bensynapse.github.io/jsonrpcclient/#install"><img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue" alt="Python 3.11 to 3.14" /></a>
   <a href="https://pypistats.org/packages/jsonrpcclient"><img src="https://img.shields.io/pypi/dm/jsonrpcclient" alt="Downloads per month" /></a>
   <a href="https://github.com/bensynapse/jsonrpcclient/blob/main/LICENSE"><img src="https://img.shields.io/github/license/bensynapse/jsonrpcclient" alt="License: MIT" /></a>
 </p>
@@ -39,7 +39,7 @@ any transport: HTTP, websockets, ZeroMQ, or something of your own.
   free-threaded Python 3.14t.
 - A malformed response raises `InvalidResponse` with a message saying what's
   wrong, such as `missing 'id'` (new in 4.1.0).
-- Supports Python 3.8 to 3.14.
+- Supports Python 3.11 to 3.14.
 
 ## Install
 

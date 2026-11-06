@@ -71,9 +71,8 @@ elif isinstance(parsed, Error):
 pong
 ```
 
-On Python 3.10 and later you can use `match`:
+You can also use `match`:
 
-<!-- min-python: 3.10 -->
 ```python
 import logging
 

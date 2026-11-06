@@ -66,11 +66,11 @@ pong
 error response. Narrow with `isinstance` anyway, or annotate the data first:
 
 ```python
-from typing import Any, Dict
+from typing import Any
 
 from jsonrpcclient import parse
 
-data: Dict[str, Any] = {"jsonrpc": "2.0", "result": "pong", "id": 1}
+data: dict[str, Any] = {"jsonrpc": "2.0", "result": "pong", "id": 1}
 parsed = parse(data)  # Ok | Error, so the type checker makes you narrow it
 ```
 
@@ -91,8 +91,8 @@ error -32601: Method not found
 ```
 
 For params, `jsonrpcclient.requests.Params` is
-`Dict[str, Any] | List[Any] | Tuple[Any, ...]`. A string isn't accepted:
+`dict[str, Any] | list[Any] | tuple[Any, ...]`. A string isn't accepted:
 `request("sqrt", "16")` is a type error.
 
-The request functions return `Dict[str, Any]`, and the `*_json` versions
+The request functions return `dict[str, Any]`, and the `*_json` versions
 return `str`.

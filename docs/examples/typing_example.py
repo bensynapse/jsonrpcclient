@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from jsonrpcclient import Error, Ok, parse
 from jsonrpcclient.responses import Response
@@ -10,14 +10,14 @@ def describe(response: Response) -> str:
     return f"error {response.code}: {response.message}"
 
 
-def result_of(data: Dict[str, Any]) -> Any:
+def result_of(data: dict[str, Any]) -> Any:
     parsed = parse(data)  # Ok | Error
     if isinstance(parsed, Error):
         raise RuntimeError(parsed.message)
     return parsed.result  # mypy knows parsed is an Ok here
 
 
-batch: List[Dict[str, Any]] = [
+batch: list[dict[str, Any]] = [
     {"jsonrpc": "2.0", "result": "pong", "id": 1},
     {
         "jsonrpc": "2.0",
