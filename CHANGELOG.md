@@ -2,7 +2,7 @@
 
 Dates are release dates.
 
-## 5.0.0rc1 (not released yet)
+## 5.0.0rc1 (2026-11-06)
 
 The first release candidate of 5.0. `pip install --pre jsonrpcclient` installs
 it. `pip install jsonrpcclient` keeps installing 4.x until 5.0.0.

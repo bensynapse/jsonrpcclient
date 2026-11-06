@@ -21,7 +21,7 @@ from .requests import (
 )
 from .responses import Error, InvalidResponse, Ok, match_responses, parse, parse_json
 
-__version__ = "5.0.0.dev0"
+__version__ = "5.0.0rc1"
 """The version of jsonrpcclient, as a string. Added in 4.0.4."""
 
 __all__ = [
