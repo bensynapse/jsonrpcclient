@@ -1,10 +1,8 @@
 # Changelog
 
-Dates are release dates. A version marked "not released yet" exists on the
-main branch but isn't on PyPI, so `pip install jsonrpcclient` doesn't give
-you its changes yet.
+Dates are release dates.
 
-## 4.1.0 (not released yet)
+## 4.1.0 (2026-11-06)
 
 See [Migration](https://bensynapse.github.io/jsonrpcclient/migration/#from-40-to-41)
 for what to check when upgrading.
@@ -43,7 +41,7 @@ for what to check when upgrading.
   guide, and one page per transport. New guides cover notifications, batches,
   ids, error handling, typing and threads.
 
-## 4.0.4 (not released yet)
+## 4.0.4 (2026-11-06)
 
 This release fixes the links on the PyPI page. The 4.0.3 page linked to the
 project's old website domain, which now belongs to someone else and serves a

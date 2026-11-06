@@ -43,12 +43,8 @@ Settings → Environments → pypi.
    don't match or the CHANGELOG heading has no date. It also stops if
    mkdocs.yml or README.md still say the version isn't released.
 
-   4.0.4 and 4.1.0 are both marked "not released yet". 4.0.4 can still be
-   tagged on its own at `6a1569a`, before 4.1.0. A tag runs the workflow
-   from the tagged commit, so that tag gets the older checks. It also
-   publishes that commit's undated `## 4.0.4` CHANGELOG text as the notes. If you skip it, move its
-   CHANGELOG entries into the 4.1.0 section. Then change "New in 4.0.4" in the
-   docs to "New in 4.1.0" (`grep -rn "4\.0\.4" docs` finds them).
+   A patch for an older line goes on a `release/` branch, as 4.0.4 did
+   (`release/4.0.x`, tagged before 4.1.0).
 2. Wait until CI has passed on the merge commit. Then tag it and push the tag.
    The release workflow refuses a commit that isn't on main or a `release/`
    branch, and one that "CI OK" hasn't passed on:

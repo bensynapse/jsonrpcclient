@@ -47,10 +47,8 @@ any transport: HTTP, websockets, ZeroMQ, or something of your own.
 pip install jsonrpcclient
 ```
 
-The latest release on PyPI is 4.0.3. This README and the documentation
-describe 4.1.0, which isn't released yet. The
-[changelog](https://bensynapse.github.io/jsonrpcclient/changelog/) lists the
-differences.
+The [changelog](https://bensynapse.github.io/jsonrpcclient/changelog/) lists
+what changed in each release.
 
 ## Quickstart
 

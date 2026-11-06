@@ -123,6 +123,11 @@ except InvalidResponse as exc:
 Invalid JSON-RPC response: missing 'id'
 ```
 
+**An empty response batch raises.** `parse([])` and `parse_json("[]")` raise
+`InvalidResponse`. 4.0 returned an empty iterator. A batch response is never
+empty: a server that has nothing to say for a batch of notifications sends no
+response at all.
+
 **New error messages.** `parse_json('"pong"')` used to say "Use parse_json on
 strings". It now says it expected an object. Update any test that matches the
 old text.
