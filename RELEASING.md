@@ -49,7 +49,9 @@ Settings → Environments → pypi.
    publishes that commit's undated `## 4.0.4` CHANGELOG text as the notes. If you skip it, move its
    CHANGELOG entries into the 4.1.0 section. Then change "New in 4.0.4" in the
    docs to "New in 4.1.0" (`grep -rn "4\.0\.4" docs` finds them).
-2. Tag the merge commit on main and push the tag:
+2. Wait until CI has passed on the merge commit. Then tag it and push the tag.
+   The release workflow refuses a commit that isn't on main or a `release/`
+   branch, and one that "CI OK" hasn't passed on:
 
    ```sh
    git fetch origin

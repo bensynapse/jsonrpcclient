@@ -2,7 +2,8 @@
 
 jsonrpcclient.com and jsonrpcserver.com were the project's old websites. Both
 domains now belong to someone else and serve gambling spam, and PyPI shows
-whatever links are in the metadata. The long description (README) is part of
+whatever links are in the metadata. composed.blog, the previous author's
+blog, now redirects to spam too. The long description (README) is part of
 the metadata, so this checks that too.
 
 Usage: python check_metadata.py dist/*
@@ -14,7 +15,7 @@ import tarfile
 import zipfile
 from pathlib import Path
 
-FORBIDDEN = re.compile(r"jsonrpc(client|server)\.com", re.IGNORECASE)
+FORBIDDEN = re.compile(r"jsonrpc(client|server)\.com|composed\.blog", re.IGNORECASE)
 
 
 def read_metadata(path: Path) -> str:
