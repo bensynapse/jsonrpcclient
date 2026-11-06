@@ -2,6 +2,12 @@
 
 Dates are release dates.
 
+## 4.2.1 (2026-11-06)
+
+- Importing jsonrpcclient on Python 3.8, 3.9 or 3.10 no longer warns. pip
+  already keeps those Pythons on 4.x, so the warning asked for nothing. It
+  also broke test suites that turn warnings into errors.
+
 ## 4.2.0 (2026-11-06)
 
 Warnings about what 5.0 changes, so an upgrade doesn't surprise you. Nothing

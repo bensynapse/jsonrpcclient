@@ -5,7 +5,7 @@ See plans/5.0.md on the main branch.
 
 import sys
 import warnings
-from typing import Any, Tuple
+from typing import Any
 
 _SENDS_ANYWAY = "4.x sends it anyway, but 5.0 raises TypeError."
 
@@ -30,15 +30,4 @@ def check_request(method: Any, params: Any) -> None:
         warn(
             "params must be a list, tuple or dict, not "
             f"{type(params).__name__}. {_SENDS_ANYWAY}"
-        )
-
-
-def check_python(version: Tuple[Any, ...]) -> None:
-    """Warn once, at import, on a Python that 5.0 doesn't support."""
-    if version < (3, 11):
-        warnings.warn(
-            "jsonrpcclient 5.0 needs Python 3.11 or later. On this Python, pip "
-            "keeps installing 4.x.",
-            FutureWarning,
-            stacklevel=3,
         )
