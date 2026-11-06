@@ -21,16 +21,17 @@ Build each request as usual and put them in a list:
 ## Reading the responses
 
 `parse` on a list gives a list of `Ok` and `Error`. The server can send
-the responses in any order, so match them to your requests by id. This example
-sends three requests and a notification to a test server that knows `ping`
-and `add` but not `divide`:
+the responses in any order. `match_responses` matches them to your requests
+by id, and handles the edge cases below. This example sends three requests
+and a notification to a test server that knows `ping` and `add` but not
+`divide`:
 
 <!-- requires: requests -->
 <!-- server -->
 ```python
 import requests
 
-from jsonrpcclient import notification, parse, request
+from jsonrpcclient import match_responses, notification, parse, request
 
 batch = [
     request("ping", id=1),
@@ -40,13 +41,9 @@ batch = [
 ]
 response = requests.post("http://localhost:8000/", json=batch, timeout=10)
 response.raise_for_status()
-data = response.json()
-if isinstance(data, dict):
-    # The server rejected the whole batch. See "Edge cases" below.
-    raise RuntimeError(f"Batch rejected: {parse(data)}")
-by_id = {parsed.id: parsed for parsed in parse(data)}
-for request_id in sorted(by_id):
-    print(request_id, by_id[request_id])
+matched = match_responses(batch, parse(response.json()))
+for request_id, parsed in matched.items():
+    print(request_id, parsed)
 ```
 
 ```text title="Output"
@@ -55,19 +52,45 @@ for request_id in sorted(by_id):
 3 Error(code=-32601, message='Method not found', data=None, id=3)
 ```
 
-The notification gets no response, so there are three, not four.
+The notification gets no response, so there are three, not four. The dict
+follows the order of the requests, whatever order the server used.
 
 `parse` checks every response in the batch before it returns, and the list
 can be read as often as you like.
 
 !!! info "Changed in 5.0"
     4.x returned a lazy iterator, which could be read only once and raised
-    for a bad item only when the loop reached it.
+    for a bad item only when the loop reached it. `match_responses` is new
+    in 5.0.
+
+## What match_responses checks
+
+- **A rejected batch.** If the server sends one error instead of a list,
+  every request gets that error.
+- **Errors with a null id.** A request with no response of its own gets one
+  of those, in order. Left-over ones belong to notifications.
+- **Anything it can't match** raises `InvalidResponse`: a request with no
+  response, a response for an id you didn't send, two responses for one id,
+  or a single `Ok` for a batch.
+- **Two requests with the same id** raise `ValueError`, since their responses
+  can't be told apart.
+
+```pycon
+>>> from jsonrpcclient import Error, Ok, match_responses, request
+>>> batch = [request("ping", id=1), request("ping", id=2)]
+>>> match_responses(batch, Error(-32600, "Invalid Request", None, None))
+{1: Error(code=-32600, message='Invalid Request', data=None, id=None), 2: Error(code=-32600, message='Invalid Request', data=None, id=None)}
+>>> match_responses(batch, [Ok("pong", 1)])
+Traceback (most recent call last):
+    ...
+jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response: no response for id 2
+```
 
 ## Edge cases
 
-These three cases catch people out. The [requests transport
-example](transports/requests.md) handles the first one.
+These three cases catch people out if you match responses yourself.
+`match_responses` handles all three. The [requests transport
+example](transports/requests.md) handles the first one by hand.
 
 **The server rejects the whole batch.** The batch itself can be invalid, for
 example an empty list. JSON-RPC 2.0 then has the server reply with a single

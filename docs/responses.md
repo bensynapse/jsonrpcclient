@@ -94,8 +94,8 @@ A type checker needs one of these checks before you use `.result`. See
 
 ## Batch responses
 
-Parsing a list gives a list of responses, which you match to your
-requests by id:
+Parsing a list gives a list of responses. `match_responses` matches them to
+your requests by id:
 
 ```pycon
 >>> responses = parse(
@@ -108,14 +108,16 @@ requests by id:
 ...         },
 ...     ]
 ... )
->>> by_id = {response.id: response for response in responses}
+>>> from jsonrpcclient import match_responses, request
+>>> by_id = match_responses([request("a", id=1), request("b", id=2)], responses)
 >>> by_id[1]
 Error(code=-32601, message='Method not found', data=None, id=1)
 >>> by_id[2]
 Ok(result='pong', id=2)
 ```
 
-[Batches](batches.md) covers the cases where a batch reply isn't a list.
+[Batches](batches.md) covers what `match_responses` checks, and the cases
+where a batch reply isn't a list.
 
 ## A response with both result and error
 

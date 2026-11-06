@@ -1,13 +1,13 @@
 """Parse JSON-RPC 2.0 responses into `Ok` and `Error`.
 
-`Ok`, `Error`, `InvalidResponse`, `parse` and `parse_json` are re-exported from
-the `jsonrpcclient` package. The `Response` type alias lives only here:
-`from jsonrpcclient.responses import Response`.
+`Ok`, `Error`, `InvalidResponse`, `parse`, `parse_json` and `match_responses`
+are re-exported from the `jsonrpcclient` package. The `Response` type alias
+lives only here: `from jsonrpcclient.responses import Response`.
 """
 
 import json
 import reprlib
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any, NamedTuple, cast, overload
 
 Deserialized = dict[str, Any] | list[dict[str, Any]]
@@ -195,7 +195,7 @@ def parse(
     A dict gives one `Ok` or `Error`. A list (a batch) gives a list of `Ok` and
     `Error`, in the order the server sent them. Every item is checked before
     `parse` returns. Batch responses can come back in any order, so match them
-    up by id. An empty batch raises `InvalidResponse`.
+    up by id with `match_responses`. An empty batch raises `InvalidResponse`.
 
     Changed in 5.0: a batch gives a list. 4.x gave a one-pass iterator, which
     raised for a bad item only when the loop reached it.
@@ -275,3 +275,94 @@ def parse_json(
     """
     deserialized: Deserialized = json.loads(response, **kwargs)
     return _parse(deserialized, strict)
+
+
+def match_responses(
+    requests: Iterable[Mapping[str, Any]], responses: Response | Iterable[Response]
+) -> dict[Any, Response]:
+    """Match a batch's responses to its requests by id.
+
+    Pass the batch as you sent it, and what `parse` returned for the reply.
+    Notifications in the batch are skipped, since they get no response.
+
+    - If `responses` is one `Error`, the server rejected the whole batch, and
+      every request gets that error.
+    - A response with a null id that matches no request is an error the server
+      couldn't tie to a request, for example one it couldn't read. A request
+      without a response of its own gets one of those, in order. Any left over
+      belong to notifications, and are dropped.
+
+    New in 5.0.
+
+    Args:
+        requests: The requests and notifications in the batch, as sent.
+        responses: What `parse` returned for the reply.
+
+    Returns:
+        A dict from each request's id to its `Ok` or `Error`, in the order of
+            the requests.
+
+    Raises:
+        InvalidResponse: If a request has no response, a response's id matches
+            no request, two responses have the same id, or `responses` is one
+            `Ok`.
+        ValueError: If two requests have the same id.
+        TypeError: If `responses` isn't what `parse` returned, or an id isn't
+            hashable. JSON-RPC ids are strings, numbers or null, which all are.
+
+    Examples:
+        >>> from jsonrpcclient import request
+        >>> batch = [request("ping", id=1), request("add", [2, 3], id=2)]
+        >>> reply = [
+        ...     {"jsonrpc": "2.0", "result": 5, "id": 2},
+        ...     {"jsonrpc": "2.0", "result": "pong", "id": 1},
+        ... ]
+        >>> match_responses(batch, parse(reply))
+        {1: Ok(result='pong', id=1), 2: Ok(result=5, id=2)}
+    """
+    ids: list[Any] = [item["id"] for item in requests if "id" in item]
+    wanted = set(ids)
+    if len(wanted) != len(ids):
+        duplicate = next(id_ for id_ in ids if ids.count(id_) > 1)
+        raise ValueError(
+            f"Two requests have the id {duplicate!r}, so their responses can't "
+            "be told apart"
+        )
+    if isinstance(responses, Error):
+        return dict.fromkeys(ids, responses)
+    if isinstance(responses, Ok):
+        raise InvalidResponse(
+            "Invalid JSON-RPC response: a batch gets a list of responses, or one "
+            f"Error if the server rejected it, not {responses!r}"
+        )
+    found: dict[Any, Response] = {}
+    unread: list[Error] = []
+    for response in responses:
+        if not isinstance(cast(object, response), (Ok, Error)):
+            raise TypeError(
+                "responses must be what parse returned, not a list of "
+                f"{type(response).__name__}"
+            )
+        if response.id in wanted:
+            if response.id in found:
+                raise InvalidResponse(
+                    f"Invalid JSON-RPC response: two responses for id {response.id!r}"
+                )
+            found[response.id] = response
+        elif response.id is None and isinstance(response, Error):
+            unread.append(response)
+        else:
+            raise InvalidResponse(
+                f"Invalid JSON-RPC response: id {response.id!r} matches no request"
+            )
+    matched: dict[Any, Response] = {}
+    for id_ in ids:
+        if id_ in found:
+            matched[id_] = found[id_]
+        elif unread:
+            matched[id_] = unread.pop(0)
+        else:
+            raise InvalidResponse(
+                f"Invalid JSON-RPC response: no response for id {id_!r}"
+            )
+    return matched

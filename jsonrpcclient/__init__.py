@@ -19,7 +19,7 @@ from .requests import (
     request_random,
     request_uuid,
 )
-from .responses import Error, InvalidResponse, Ok, parse, parse_json
+from .responses import Error, InvalidResponse, Ok, match_responses, parse, parse_json
 
 __version__ = "5.0.0.dev0"
 """The version of jsonrpcclient, as a string. Added in 4.0.4."""
@@ -30,6 +30,7 @@ __all__ = [
     "Notification",
     "Ok",
     "Request",
+    "match_responses",
     "notification",
     "notification_json",
     "parse",
