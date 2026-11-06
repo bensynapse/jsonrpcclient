@@ -5,6 +5,9 @@ so you pair it with any transport. Documentation:
 https://bensynapse.github.io/jsonrpcclient/
 """
 
+import sys as _sys
+
+from . import _future
 from .requests import (
     notification,
     notification_json,
@@ -19,7 +22,7 @@ from .requests import (
 )
 from .responses import Error, InvalidResponse, Ok, parse, parse_json
 
-__version__ = "4.1.0"
+__version__ = "4.2.0"
 """The version of jsonrpcclient, as a string. Added in 4.0.4."""
 
 __all__ = [
@@ -39,3 +42,5 @@ __all__ = [
     "request_random",
     "request_uuid",
 ]
+
+_future.check_python(_sys.version_info)

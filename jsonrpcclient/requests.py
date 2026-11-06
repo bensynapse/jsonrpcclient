@@ -7,7 +7,7 @@ from there: `from jsonrpcclient import request`.
 import json
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from . import id_generators
+from . import _future, id_generators
 from .sentinels import NOID
 
 Params = Union[Dict[str, Any], List[Any], Tuple[Any, ...]]
@@ -46,6 +46,7 @@ def notification(method: str, params: Optional[Params] = None) -> Dict[str, Any]
         >>> notification("log", ["hello"])
         {'jsonrpc': '2.0', 'method': 'log', 'params': ['hello']}
     """
+    _future.check_request(method, params)
     return notification_pure(method, params if params else ())
 
 
@@ -102,6 +103,7 @@ def request_impure(
     your own id_generator between threads, make sure it's thread-safe. The ones
     in jsonrpcclient.id_generators are.
     """
+    _future.check_request(method, params)
     return request_pure(
         id_generator or id_generators.decimal(), method, params or (), id
     )
@@ -124,8 +126,8 @@ def request(
     Args:
         method: The name of the method to call.
         params: Positional params as a list or tuple, or named params as a dict.
-            Left out of the request if empty or not given. Only the type hint
-            restricts it; nothing is checked at runtime.
+            Left out of the request if empty or not given. Anything else gives
+            a `FutureWarning` (new in 4.2.0), and 5.0 raises `TypeError`.
         id: The id to use instead of the next one in the sequence. Any JSON
             value works. `id=None` sends `"id": null`; it does not make a
             notification (use `notification` for that).

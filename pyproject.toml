@@ -92,6 +92,8 @@ reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# On Python 3.8 to 3.10, importing jsonrpcclient warns that 5.0 needs 3.11.
+filterwarnings = ["ignore:jsonrpcclient 5.0 needs Python 3.11:FutureWarning"]
 
 [tool.coverage.run]
 branch = true
