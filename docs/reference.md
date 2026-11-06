@@ -48,6 +48,8 @@ id from its sequence.
 
 ::: jsonrpcclient.parse_json
 
+::: jsonrpcclient.match_responses
+
 ::: jsonrpcclient.Ok
 
 ::: jsonrpcclient.Error

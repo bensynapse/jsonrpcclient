@@ -13,6 +13,7 @@ from jsonrpcclient import (
     Notification,
     Ok,
     Request,
+    match_responses,
     notification,
     notification_json,
     parse,
@@ -65,6 +66,10 @@ if TYPE_CHECKING:
     assert_type(parse([{"jsonrpc": "2.0", "result": 1, "id": 1}]), list[Response])
     assert_type(parse_json("{}"), Ok | Error | list[Response])
     assert_type(parse({"result": 1, "id": 1}, strict=True), Ok | Error)
+    assert_type(
+        match_responses([request("a")], parse([{"result": 1, "id": 1}])),
+        dict[Any, Response],
+    )
     assert_type(parse([{"result": 1, "id": 1}], strict=True), list[Response])
     assert_type(
         parse_json("{}", strict=True, parse_float=str), Ok | Error | list[Response]
