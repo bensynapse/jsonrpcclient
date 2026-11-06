@@ -11,7 +11,26 @@ problem. We'll reply within a week.
 
 ## Supported versions
 
-Fixes go into the latest release. Older releases don't get updates.
+| Version | Security fixes | Bug fixes |
+|---|---|---|
+| 5.0 release candidates | Yes | Yes |
+| 4.x | Yes | Yes |
+| 3.x and older | No | No |
+
+4.x is the supported line until 5.0.0 is released. After that, 5.x is the
+supported line, and 4.x gets security fixes for 12 months from the 5.0.0
+release date. Other 4.x bug fixes in that time are at our discretion. After 12
+months, 4.x gets no more releases.
+
+Release candidates, such as 5.0.0rc1, get fixes in the next release candidate
+or in 5.0.0.
+
+A fix comes out as a new release of each supported line, so upgrade to the
+latest release of your line to get it. Older releases within a line don't get
+updates.
+
+Each line has its own docs: the version menu at the top of
+https://bensynapse.github.io/jsonrpcclient/ switches between them.
 
 ## Old domains
 

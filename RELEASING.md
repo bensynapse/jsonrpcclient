@@ -78,7 +78,17 @@ whose version reached PyPI.
 
 ## Docs
 
-The docs site deploys from `.github/workflows/docs.yml` when a release tag is
-pushed, so it always describes the version on PyPI. To publish a docs-only fix
-between releases, run the Docs workflow by hand on main. If main is ahead of
-PyPI by then, set `unreleased` in mkdocs.yml first, so a banner says so.
+The docs site has one copy of the docs per release line, such as 4.x and 5.0,
+and the stable line again at the root. `.github/docs-versions.json` says which
+branch each line is built from and which line is stable. The Docs workflow
+rebuilds every line after each release, so each line keeps describing its own
+latest release.
+
+- To publish a docs-only fix between releases, merge it into the line's
+  branch, then run the Docs workflow by hand on main. If that branch is ahead
+  of PyPI by then, set `unreleased` in its mkdocs.yml first, so a banner says
+  so.
+- To start publishing a new line, such as 5.0 at its first release candidate,
+  add it at the top of `versions` in `.github/docs-versions.json`.
+- When its final release is out, make it `stable`. The root then shows it, and
+  the old line's pages show a banner that links to the stable docs.

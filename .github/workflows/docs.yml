@@ -1,22 +1,54 @@
 name: Docs
 
-# The site describes the release on PyPI, so it deploys when a release tag is
-# pushed, not on every merge to main. To publish a docs-only fix between
-# releases, run this workflow by hand on main (Actions, Docs, Run workflow).
+# Builds the versioned docs site and deploys it to GitHub Pages.
+# .github/docs-versions.json lists each release line (4.x, 5.0, ...), the
+# branch it's built from and which line is stable. The stable line is also
+# built at the site root, so old links keep working.
+# .github/scripts/build_docs_site.py has the details.
+#
+# Every run rebuilds every line from its own branch, so a release on one line
+# can't overwrite another line's docs. The site deploys after the Release
+# workflow succeeds, whichever branch was tagged: workflow_run always runs this
+# file from main. A pre-release tag deploys too, but only the lines in
+# docs-versions.json are built.
+#
+# To publish a docs-only fix between releases, merge it into the line's
+# branch, then run this workflow by hand on main (Actions, Docs, Run workflow).
+#
+# A pull request that touches the docs builds the site with its own changes as
+# an extra "preview" line, then checks it in a browser. It doesn't deploy.
 on:
-  push:
-    tags: ["v*"]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/docs-versions.json"
+      - ".github/scripts/build_docs_site.py"
+      - ".github/scripts/check_site.py"
+      - ".github/workflows/docs.yml"
+      - "CHANGELOG.md"
+      - "README.md"
+      - "SECURITY.md"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "overrides/**"
+      - "requirements/docs*.txt"
+      - "requirements/site.txt"
 
 permissions:
   contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  # Deploys queue one after another. A new push to a pull request cancels its
+  # older check.
+  group: ${{ github.event_name == 'pull_request' && format('docs-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -25,14 +57,41 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
-      - run: python -m pip install -r requirements/docs.txt
-      - run: mkdocs build --strict
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+          cache: pip
+          cache-dependency-path: |
+            requirements/docs*.txt
+            requirements/site.txt
+      - run: python -m pip install -r requirements/docs.txt -r requirements/site.txt
+      - name: Build every release line
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            python .github/scripts/build_docs_site.py --checkout-ref "$BASE_REF" --preview .
+          else
+            python .github/scripts/build_docs_site.py
+          fi
+      - run: python -m playwright install --with-deps chromium
+      - name: Download axe-core and check its hash
+        env:
+          AXE_VERSION: "4.14.0"
+          AXE_SHA512: "9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ=="
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/axe.tgz" "https://registry.npmjs.org/axe-core/-/axe-core-$AXE_VERSION.tgz"
+          echo "$AXE_SHA512" | base64 -d > "$RUNNER_TEMP/expected.bin"
+          openssl dgst -sha512 -binary "$RUNNER_TEMP/axe.tgz" | cmp - "$RUNNER_TEMP/expected.bin"
+          tar -xzf "$RUNNER_TEMP/axe.tgz" -C "$RUNNER_TEMP" package/axe.min.js
+      - name: Check the site in a browser
+        run: python .github/scripts/check_site.py site "$RUNNER_TEMP/package/axe.min.js"
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     permissions:
       pages: write
