@@ -7,7 +7,7 @@ lives only here: `from jsonrpcclient.responses import Response`.
 
 import json
 import reprlib
-from collections.abc import Iterable, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from typing import Any, NamedTuple, cast, overload
 
 Deserialized = dict[str, Any] | list[dict[str, Any]]
@@ -342,6 +342,10 @@ def match_responses(
             raise TypeError(
                 "responses must be what parse returned, not a list of "
                 f"{type(response).__name__}"
+            )
+        if not isinstance(response.id, Hashable):
+            raise InvalidResponse(
+                f"Invalid JSON-RPC response: id {response.id!r} matches no request"
             )
         if response.id in wanted:
             if response.id in found:

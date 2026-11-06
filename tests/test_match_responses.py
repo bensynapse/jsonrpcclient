@@ -132,3 +132,9 @@ def test_unparsed_responses_raise_type_error() -> None:
     with pytest.raises(TypeError) as exc:
         match_responses([request("a", id=1)], reply)
     assert str(exc.value) == "responses must be what parse returned, not a list of dict"
+
+
+def test_an_unhashable_response_id_matches_no_request() -> None:
+    with pytest.raises(InvalidResponse) as exc:
+        match_responses([request("a", id=1)], parse([{"result": 1, "id": [1]}]))
+    assert str(exc.value) == "Invalid JSON-RPC response: id [1] matches no request"
