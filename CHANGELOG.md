@@ -2,6 +2,27 @@
 
 Dates are release dates.
 
+## 4.2.0 (2026-11-06)
+
+Warnings about what 5.0 changes, so an upgrade doesn't surprise you. Nothing
+else changes. Each is a `FutureWarning`, which Python shows by default.
+
+- A `method` that isn't a string, or `params` that aren't a list, tuple or
+  dict, warn. 4.x sends the request anyway. 5.0 raises `TypeError`. This
+  covers `request`, `notification` and their variants.
+- `parse_json(..., strict=...)` warns. 4.x passes `strict` on to
+  `json.loads`. In 5.0 it turns on stricter checks of the response instead.
+  `parse(json.loads(text, strict=False))` keeps the `json.loads` option.
+- Importing jsonrpcclient on Python 3.8, 3.9 or 3.10 warns once. 5.0 needs
+  Python 3.11 or later, and pip keeps installing 4.x on older Pythons.
+
+Two more changes can't be detected at run time, so they don't warn. In 5.0
+`parse` on a batch returns a list, not an iterator, so `next(parse(batch))`
+stops working. And `InvalidResponse` stops subclassing `KeyError` and
+`TypeError`. The
+[5.0 plan](https://github.com/bensynapse/jsonrpcclient/blob/main/plans/5.0.md)
+lists everything that changes.
+
 ## 4.1.0 (2026-11-06)
 
 See [Migration](https://bensynapse.github.io/jsonrpcclient/migration/#from-40-to-41)

@@ -48,15 +48,19 @@ Pass a list (or tuple) for positional parameters, or a dict for named ones:
 works too.
 
 A tuple is sent as a list. Empty params (`[]`, `()`, `{}` or `None`) are left
-out of the request, which JSON-RPC 2.0 allows. The library doesn't check the
-type of `params` at runtime, but mypy and pyright flag anything other than a
-list, tuple or dict.
+out of the request, which JSON-RPC 2.0 allows. mypy and pyright flag anything
+other than a list, tuple or dict.
 
 !!! warning "A string is not params"
     `request("get", "fruit")` sends `"params": "fruit"`, which isn't valid
     JSON-RPC. Wrap a single positional argument in a list:
     `request("get", ["fruit"])`. This is also what happens to 3.x code that
     passes a URL first. See [Migration](migration.md).
+
+!!! info "Changed in 4.2.0"
+    `params` that aren't a list, tuple or dict, and a `method` that isn't a
+    string, give a `FutureWarning`. 4.x still sends the request. 5.0 raises
+    `TypeError` instead.
 
 ## Your own id
 

@@ -8,6 +8,8 @@ the `jsonrpcclient` package. The `Response` type alias lives only here:
 import json
 from typing import Any, Dict, Iterator, List, Mapping, NamedTuple, Union, cast, overload
 
+from . import _future
+
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 """What `parse` accepts: one response object, or a list of them for a batch."""
 
@@ -199,6 +201,8 @@ def parse_json(
     Args:
         response: The response body, as `str`, `bytes` or `bytearray`.
         **kwargs: Passed to `json.loads`, for example `parse_float=Decimal`.
+            Passing `strict` gives a `FutureWarning` (new in 4.2.0): in 5.0,
+            `strict` turns on parse_json's own checks of the response instead.
 
     Returns:
         An `Ok` or `Error` for a JSON object, or an iterator of them for a JSON
@@ -215,5 +219,11 @@ def parse_json(
         >>> parse_json('{"jsonrpc": "2.0", "result": "pong", "id": 1}')
         Ok(result='pong', id=1)
     """
+    if "strict" in kwargs:
+        _future.warn(
+            "parse_json's strict keyword goes to json.loads in 4.x. In 5.0 it "
+            "turns on stricter JSON-RPC checks instead. To keep the json.loads "
+            "option, call parse(json.loads(response, strict=...))."
+        )
     deserialized: Deserialized = json.loads(response, **kwargs)
     return _parse(deserialized)
