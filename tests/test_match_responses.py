@@ -12,6 +12,7 @@ from jsonrpcclient import (
     notification,
     parse,
     request,
+    request_json,
 )
 from jsonrpcclient.responses import Response
 
@@ -131,10 +132,60 @@ def test_unparsed_responses_raise_type_error() -> None:
     reply: Any = [{"jsonrpc": "2.0", "result": "pong", "id": 1}]
     with pytest.raises(TypeError) as exc:
         match_responses([request("a", id=1)], reply)
-    assert str(exc.value) == "responses must be what parse returned, not a list of dict"
+    assert str(exc.value) == (
+        "responses must be what parse returned, not a list of dict"
+    )
 
 
 def test_an_unhashable_response_id_matches_no_request() -> None:
     with pytest.raises(InvalidResponse) as exc:
         match_responses([request("a", id=1)], parse([{"result": 1, "id": [1]}]))
     assert str(exc.value) == "Invalid JSON-RPC response: id [1] matches no request"
+
+
+def test_an_id_with_an_unhashable_part_matches_no_request() -> None:
+    reply = parse([{"result": 1, "id": (1, [2])}])
+    with pytest.raises(InvalidResponse) as exc:
+        match_responses([request("a", id=1)], reply)
+    assert str(exc.value) == (
+        "Invalid JSON-RPC response: id (1, [2]) matches no request"
+    )
+
+
+def test_true_is_not_the_id_1() -> None:
+    # In JSON, true and 1 are different ids. Python says True == 1.
+    with pytest.raises(InvalidResponse) as exc:
+        match_responses([request("a", id=1)], [Ok("x", True)])
+    assert str(exc.value) == "Invalid JSON-RPC response: id True matches no request"
+    with pytest.raises(InvalidResponse):
+        match_responses([request("a", id=True)], [Ok("x", 1)])
+    assert match_responses([request("a", id=True)], [Ok("x", True)]) == {
+        True: Ok("x", True)
+    }
+
+
+def test_1_and_1_0_are_the_same_id() -> None:
+    assert match_responses([request("a", id=1)], [Ok("x", 1.0)]) == {1: Ok("x", 1.0)}
+
+
+@pytest.mark.parametrize(
+    "reply,name",
+    [({"jsonrpc": "2.0", "result": 1, "id": 1}, "dict"), ('[{"id": 1}]', "str")],
+)
+def test_a_reply_that_was_not_parsed_raises_type_error(reply: Any, name: str) -> None:
+    with pytest.raises(TypeError) as exc:
+        match_responses([request("a", id=1)], reply)
+    assert str(exc.value) == f"responses must be what parse returned, not a {name}"
+
+
+def test_requests_as_json_strings_raise_type_error() -> None:
+    with pytest.raises(TypeError) as exc:
+        match_responses([request_json("a", id=1)], [Ok("x", 1)])  # type: ignore[list-item]  # pyright: ignore[reportArgumentType]
+    assert str(exc.value) == (
+        "requests must be the dicts that request and notification return, not str"
+    )
+
+
+def test_requests_with_ids_1_and_true_cannot_share_a_dict() -> None:
+    with pytest.raises(ValueError, match="Two requests have the id 1"):
+        match_responses([request("a", id=1), request("b", id=True)], [])

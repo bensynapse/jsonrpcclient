@@ -6,8 +6,9 @@ lives only here: `from jsonrpcclient.responses import Response`.
 """
 
 import json
+import math
 import reprlib
-from collections.abc import Hashable, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any, NamedTuple, cast, overload
 
 Deserialized = dict[str, Any] | list[dict[str, Any]]
@@ -104,6 +105,8 @@ def _check_strict(response: Mapping[str, Any], index: int | None) -> None:
         raise _invalid(
             f"'id' must be a string, a number or null, got {_type_name(id_)}", index
         )
+    if isinstance(id_, float) and not math.isfinite(id_):
+        raise _invalid(f"'id' must be a string, a number or null, got {id_!r}", index)
     if "result" in response and "error" in response:
         raise _invalid("has both 'result' and 'error'", index)
     if "error" not in response:
@@ -277,6 +280,11 @@ def parse_json(
     return _parse(deserialized, strict)
 
 
+def _id_key(id_: Any) -> tuple[bool, Any]:
+    """A key that compares ids as JSON does: true isn't 1, though 1.0 is."""
+    return (isinstance(id_, bool), id_)
+
+
 def match_responses(
     requests: Iterable[Mapping[str, Any]], responses: Response | Iterable[Response]
 ) -> dict[Any, Response]:
@@ -307,8 +315,10 @@ def match_responses(
             no request, two responses have the same id, or `responses` is one
             `Ok`.
         ValueError: If two requests have the same id.
-        TypeError: If `responses` isn't what `parse` returned, or an id isn't
+        TypeError: If `responses` isn't what `parse` returned, `requests`
+            holds something other than dicts, or a request's id isn't
             hashable. JSON-RPC ids are strings, numbers or null, which all are.
+            A response's id that isn't hashable matches no request.
 
     Examples:
         >>> from jsonrpcclient import request
@@ -320,20 +330,35 @@ def match_responses(
         >>> match_responses(batch, parse(reply))
         {1: Ok(result='pong', id=1), 2: Ok(result=5, id=2)}
     """
-    ids: list[Any] = [item["id"] for item in requests if "id" in item]
-    wanted = set(ids)
-    if len(wanted) != len(ids):
+    ids: list[Any] = []
+    for item in requests:
+        if not isinstance(cast(object, item), Mapping):
+            raise TypeError(
+                "requests must be the dicts that request and notification return, "
+                f"not {type(item).__name__}"
+            )
+        if "id" in item:
+            ids.append(item["id"])
+    # The result is a dict, so ids that Python calls equal, such as 1 and
+    # True, can't both be keys.
+    if len(set(ids)) != len(ids):
         duplicate = next(id_ for id_ in ids if ids.count(id_) > 1)
         raise ValueError(
             f"Two requests have the id {duplicate!r}, so their responses can't "
             "be told apart"
         )
+    keys = [_id_key(id_) for id_ in ids]
+    wanted = set(keys)
     if isinstance(responses, Error):
         return dict.fromkeys(ids, responses)
     if isinstance(responses, Ok):
         raise InvalidResponse(
             "Invalid JSON-RPC response: a batch gets a list of responses, or one "
             f"Error if the server rejected it, not {responses!r}"
+        )
+    if isinstance(cast(object, responses), (Mapping, str, bytes, bytearray)):
+        raise TypeError(
+            f"responses must be what parse returned, not a {type(responses).__name__}"
         )
     found: dict[Any, Response] = {}
     unread: list[Error] = []
@@ -343,16 +368,17 @@ def match_responses(
                 "responses must be what parse returned, not a list of "
                 f"{type(response).__name__}"
             )
-        if not isinstance(response.id, Hashable):
-            raise InvalidResponse(
-                f"Invalid JSON-RPC response: id {response.id!r} matches no request"
-            )
-        if response.id in wanted:
-            if response.id in found:
+        key = _id_key(response.id)
+        try:
+            known = key in wanted
+        except TypeError:  # An unhashable id, such as [1].
+            known = False
+        if known:
+            if key in found:
                 raise InvalidResponse(
                     f"Invalid JSON-RPC response: two responses for id {response.id!r}"
                 )
-            found[response.id] = response
+            found[key] = response
         elif response.id is None and isinstance(response, Error):
             unread.append(response)
         else:
@@ -360,9 +386,9 @@ def match_responses(
                 f"Invalid JSON-RPC response: id {response.id!r} matches no request"
             )
     matched: dict[Any, Response] = {}
-    for id_ in ids:
-        if id_ in found:
-            matched[id_] = found[id_]
+    for id_, key in zip(ids, keys, strict=True):
+        if key in found:
+            matched[id_] = found[key]
         elif unread:
             matched[id_] = unread.pop(0)
         else:
