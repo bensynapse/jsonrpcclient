@@ -54,6 +54,6 @@ if TYPE_CHECKING:
         assert_type(parsed, Error)
         assert_type(parsed.message, str)
 
-    # InvalidResponse can be caught as either of the old exception types.
-    key_error: KeyError = InvalidResponse("x")
-    type_error: TypeError = InvalidResponse("x")
+    # InvalidResponse is a ValueError, and no longer a KeyError or TypeError.
+    value_error: ValueError = InvalidResponse("x")
+    key_error: KeyError = InvalidResponse("x")  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]

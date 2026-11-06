@@ -66,22 +66,18 @@ Response = Ok | Error
 """The type of one parsed response. Use it to annotate your own functions."""
 
 
-class InvalidResponse(KeyError, TypeError):
+class InvalidResponse(ValueError):
     """Raised when a response isn't a valid JSON-RPC 2.0 response.
 
     The message says what is wrong, for example
     `Invalid JSON-RPC response: missing 'id'`.
 
-    It subclasses `KeyError` and `TypeError` because versions before 4.1.0
-    raised one of those for a malformed response, so `except KeyError` and
-    `except TypeError` still catch it.
+    It's a `ValueError`, like `json.JSONDecodeError`, so one `except ValueError`
+    catches a body that isn't JSON and one that isn't JSON-RPC.
 
-    Added in 4.1.0.
+    Added in 4.1.0. Changed in 5.0: it subclasses `ValueError`. In 4.x it
+    subclassed `KeyError` and `TypeError`, which 4.0 raised.
     """
-
-    def __str__(self) -> str:
-        # KeyError would show the message in quotes.
-        return Exception.__str__(self)
 
 
 def _type_name(value: object) -> str:
@@ -167,8 +163,7 @@ def parse(deserialized: Deserialized) -> Response | list[Response]:
 
     Raises:
         InvalidResponse: If a response is malformed. For a batch, the message
-            gives the index of the first bad item. Subclasses `KeyError` and
-            `TypeError`.
+            gives the index of the first bad item. A `ValueError`.
         TypeError: If `deserialized` is a `str`, `bytes` or `bytearray`. Use
             `parse_json` for those.
 
