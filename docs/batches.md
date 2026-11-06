@@ -59,7 +59,7 @@ follows the order of the requests, whatever order the server used.
 can be read as often as you like.
 
 !!! info "Changed in 5.0"
-    4.x returned a lazy iterator, which could be read only once and raised
+    4.x returned a lazy iterator, which could be read only once. It raised
     for a bad item only when the loop reached it. `match_responses` is new
     in 5.0.
 
@@ -69,11 +69,13 @@ can be read as often as you like.
   every request gets that error.
 - **Errors with a null id.** A request with no response of its own gets one
   of those, in order. Left-over ones belong to notifications.
-- **Anything it can't match** raises `InvalidResponse`: a request with no
-  response, a response for an id you didn't send, two responses for one id,
-  or a single `Ok` for a batch.
+- **Anything it can't match** raises `InvalidResponse`. That's a request with
+  no response, a response for an id you didn't send, or two responses for one
+  id. So is a single `Ok` for a batch.
 - **Two requests with the same id** raise `ValueError`, since their responses
   can't be told apart.
+- **Ids compare as JSON values.** A response with id `true` doesn't match a
+  request with id `1`, though `1.0` does.
 
 ```pycon
 >>> from jsonrpcclient import Error, Ok, match_responses, request

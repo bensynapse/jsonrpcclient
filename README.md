@@ -37,8 +37,11 @@ any transport: HTTP, websockets, ZeroMQ, or something of your own.
   random or UUID strings.
 - Id generators are safe to share between threads, and CI runs the tests on
   free-threaded Python 3.14t.
+- Batches come back as a list, and `match_responses` pairs each response
+  with its request by id (new in 5.0).
 - A malformed response raises `InvalidResponse` with a message saying what's
-  wrong, such as `missing 'id'` (new in 4.1.0).
+  wrong, such as `missing 'id'`. `strict=True` checks every JSON-RPC 2.0 rule
+  (new in 5.0).
 - Supports Python 3.11 to 3.14.
 
 ## Install
@@ -81,6 +84,16 @@ pong
 For JSON strings, use `request_json` and `parse_json`. The
 [examples](https://bensynapse.github.io/jsonrpcclient/examples/) show the same
 thing with urllib, httpx, aiohttp, websockets and ZeroMQ.
+
+## Upgrading from 4.x?
+
+5.0 is in release candidates: `pip install --pre jsonrpcclient` gets the
+latest one, and `pip install jsonrpcclient` keeps installing 4.x until 5.0.0.
+Most 4.x code runs unchanged. The
+[migration guide](https://github.com/bensynapse/jsonrpcclient/blob/main/docs/migration.md#from-4x-to-50) lists every change, and
+[issue 252](https://github.com/bensynapse/jsonrpcclient/issues/252) tracks
+the release. Upgrade to 4.2.0 first: it warns about the calls 5.0 handles
+differently.
 
 ## Upgrading from 3.x?
 
