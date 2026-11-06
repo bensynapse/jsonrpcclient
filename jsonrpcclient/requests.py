@@ -18,6 +18,20 @@ A tuple is sent as a list. Empty params are left out of the request.
 """
 
 
+def _check(method: object, params: object) -> None:
+    """Raise TypeError unless method is a str and params a list, tuple or dict.
+
+    Internal. JSON-RPC 2.0 says the method is a string and params, when
+    present, a structured value. New in 5.0.
+    """
+    if not isinstance(method, str):
+        raise TypeError(f"method must be a str, not {type(method).__name__}")
+    if params is not None and not isinstance(params, (list, tuple, dict)):
+        raise TypeError(
+            f"params must be a list, tuple or dict, not {type(params).__name__}"
+        )
+
+
 def notification_pure(method: str, params: Params) -> dict[str, Any]:
     """Create a notification"""
     return {
@@ -43,10 +57,15 @@ def notification(method: str, params: Params | None = None) -> dict[str, Any]:
         The notification as a dict, ready to serialize. Tuple params are
             converted to a list.
 
+    Raises:
+        TypeError: If `method` isn't a str, or `params` isn't a list, tuple,
+            dict or None. New in 5.0.
+
     Examples:
         >>> notification("log", ["hello"])
         {'jsonrpc': '2.0', 'method': 'log', 'params': ['hello']}
     """
+    _check(method, params)
     return notification_pure(method, params if params else ())
 
 
@@ -63,7 +82,9 @@ def notification_json(method: str, params: Params | None = None) -> str:
         The notification serialized with `json.dumps`.
 
     Raises:
-        TypeError: If `params` holds something `json.dumps` can't serialize.
+        TypeError: If `method` or `params` has the wrong type, as for
+            `notification`, or `params` holds something `json.dumps` can't
+            serialize.
 
     Examples:
         >>> notification_json("log", ["hello"])
@@ -102,7 +123,12 @@ def request_impure(
     If id is not given, the next value from id_generator is used. If you share
     your own id_generator between threads, make sure it's thread-safe. The ones
     in jsonrpcclient.id_generators are.
+
+    Raises:
+        TypeError: If method isn't a str, or params isn't a list, tuple, dict or
+            None. No id is taken from id_generator then.
     """
+    _check(method, params)
     return request_pure(
         id_generator or id_generators.decimal(), method, params or (), id
     )
@@ -125,8 +151,7 @@ def request(
     Args:
         method: The name of the method to call.
         params: Positional params as a list or tuple, or named params as a dict.
-            Left out of the request if empty or not given. Only the type hint
-            restricts it; nothing is checked at runtime.
+            Left out of the request if empty or not given.
         id: The id to use instead of the next one in the sequence. Any JSON
             value works. `id=None` sends `"id": null`; it does not make a
             notification (use `notification` for that).
@@ -134,6 +159,10 @@ def request(
     Returns:
         The request as a dict, ready to serialize. Tuple params are converted
             to a list.
+
+    Raises:
+        TypeError: If `method` isn't a str, or `params` isn't a list, tuple,
+            dict or None. New in 5.0. No id is used up then.
 
     Examples:
         >>> request("sqrt", [16], id=1)
@@ -222,7 +251,8 @@ def request_json(method: str, params: Params | None = None, id: Any = NOID) -> s
         The request serialized with `json.dumps`.
 
     Raises:
-        TypeError: If `params` or `id` holds something `json.dumps` can't
+        TypeError: If `method` or `params` has the wrong type, as for
+            `request`, or `params` or `id` holds something `json.dumps` can't
             serialize.
 
     Examples:
@@ -247,7 +277,8 @@ def request_json_hex(method: str, params: Params | None = None, id: Any = NOID) 
         The request serialized with `json.dumps`.
 
     Raises:
-        TypeError: If `params` or `id` holds something `json.dumps` can't
+        TypeError: If `method` or `params` has the wrong type, as for
+            `request`, or `params` or `id` holds something `json.dumps` can't
             serialize.
     """
     return json.dumps(request_hex(method, params, id))
@@ -270,7 +301,8 @@ def request_json_random(
         The request serialized with `json.dumps`.
 
     Raises:
-        TypeError: If `params` or `id` holds something `json.dumps` can't
+        TypeError: If `method` or `params` has the wrong type, as for
+            `request`, or `params` or `id` holds something `json.dumps` can't
             serialize.
     """
     return json.dumps(request_random(method, params, id))
@@ -291,7 +323,8 @@ def request_json_uuid(method: str, params: Params | None = None, id: Any = NOID)
         The request serialized with `json.dumps`.
 
     Raises:
-        TypeError: If `params` or `id` holds something `json.dumps` can't
+        TypeError: If `method` or `params` has the wrong type, as for
+            `request`, or `params` or `id` holds something `json.dumps` can't
             serialize.
     """
     return json.dumps(request_uuid(method, params, id))

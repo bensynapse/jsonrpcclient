@@ -10,15 +10,19 @@ Version 4 is a rewrite. In 3.x, jsonrpcclient sent the request over HTTP (or
 another transport) for you. In 4.x it only builds the request and parses the
 response, and you send it with any library you like.
 
-!!! danger "Old calls can fail silently"
-    In 3.x, `request("http://fruits.com", "get")` sent `get` to that URL. In
-    4.x the first argument is the method name and the second is `params`. So
-    the same call returns a dict, sends nothing, and raises no error:
+!!! danger "Old calls fail silently on 4.x"
+    In 3.x, `request("http://fruits.com", "get")` sent `get` to that URL. From
+    4.x the first argument is the method name and the second is `params`. On
+    4.x the same call returns a dict, sends nothing, and raises no error (4.2.0
+    adds a `FutureWarning`). 5.0 raises `TypeError`, since `"get"` isn't valid
+    params:
 
     ```pycon
     >>> from jsonrpcclient import request
     >>> request("http://fruits.com", "get")
-    {'jsonrpc': '2.0', 'method': 'http://fruits.com', 'params': 'get', 'id': 1}
+    Traceback (most recent call last):
+        ...
+    TypeError: params must be a list, tuple or dict, not str
     ```
 
     If your code still calls `request` with a URL first, nothing reaches the

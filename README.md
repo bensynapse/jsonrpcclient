@@ -84,9 +84,9 @@ thing with urllib, httpx, aiohttp, websockets and ZeroMQ.
 
 ## Upgrading from 3.x?
 
-The 4.x API is completely different: `request` builds a request and no longer
-sends it. A 3.x call such as `request("http://example.com", "get")` still runs
-but sends nothing, so read the
+Since 4.x the API is completely different: `request` builds a request and no
+longer sends it. A 3.x call such as `request("http://example.com", "get")`
+raises `TypeError` in 5.0. On 4.x it runs but sends nothing. Read the
 [migration guide](https://bensynapse.github.io/jsonrpcclient/migration/)
 before upgrading.
 
