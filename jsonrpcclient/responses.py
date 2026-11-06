@@ -6,9 +6,10 @@ the `jsonrpcclient` package. The `Response` type alias lives only here:
 """
 
 import json
-from typing import Any, Dict, Iterator, List, Mapping, NamedTuple, Union, cast, overload
+from collections.abc import Iterator, Mapping
+from typing import Any, NamedTuple, cast, overload
 
-Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
+Deserialized = dict[str, Any] | list[dict[str, Any]]
 """What `parse` accepts: one response object, or a list of them for a batch."""
 
 
@@ -61,7 +62,7 @@ class Error(NamedTuple):
         )
 
 
-Response = Union[Ok, Error]
+Response = Ok | Error
 """The type of one parsed response. Use it to annotate your own functions."""
 
 
@@ -87,7 +88,7 @@ def _type_name(value: object) -> str:
     return "null" if value is None else type(value).__name__
 
 
-def to_response(response: Dict[str, Any]) -> Response:
+def to_response(response: dict[str, Any]) -> Response:
     """Turn one deserialized response object into an `Ok` or an `Error`.
 
     Internal; use `parse`. If the response has a non-null "error", it's an
@@ -132,18 +133,18 @@ def to_response(response: Dict[str, Any]) -> Response:
 
 
 @overload
-def parse(deserialized: Dict[str, Any]) -> Response: ...
+def parse(deserialized: dict[str, Any]) -> Response: ...
 
 
 @overload
-def parse(deserialized: List[Dict[str, Any]]) -> Iterator[Response]: ...
+def parse(deserialized: list[dict[str, Any]]) -> Iterator[Response]: ...
 
 
 @overload
-def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]: ...
+def parse(deserialized: Deserialized) -> Response | Iterator[Response]: ...
 
 
-def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
+def parse(deserialized: Deserialized) -> Response | Iterator[Response]:
     """Parse a deserialized response, or a batch of them.
 
     A dict gives one `Ok` or `Error`. A list (a batch) gives a lazy iterator of
@@ -180,7 +181,7 @@ def parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
     return _parse(deserialized)
 
 
-def _parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
+def _parse(deserialized: Deserialized) -> Response | Iterator[Response]:
     if isinstance(deserialized, list):
         if not deserialized:
             raise InvalidResponse("Invalid JSON-RPC response: batch must not be empty")
@@ -189,8 +190,8 @@ def _parse(deserialized: Deserialized) -> Union[Response, Iterator[Response]]:
 
 
 def parse_json(
-    response: Union[str, bytes, bytearray], **kwargs: Any
-) -> Union[Response, Iterator[Response]]:
+    response: str | bytes | bytearray, **kwargs: Any
+) -> Response | Iterator[Response]:
     """Parse a response, or a batch of them, from a JSON string.
 
     The same as `parse(json.loads(response, **kwargs))`, except that it doesn't

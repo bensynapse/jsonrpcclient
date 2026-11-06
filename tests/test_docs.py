@@ -9,7 +9,6 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Set
 
 import pytest
 
@@ -55,7 +54,7 @@ def test_readme_quickstart_output_is_checked() -> None:
 
 
 def test_every_included_example_is_checked() -> None:
-    included: Set[str] = set()
+    included: set[str] = set()
     for path in DOCS.rglob("*.md"):
         included.update(
             re.findall(r'--8<-- "docs/examples/(\w+\.py)"', path.read_text())
@@ -66,7 +65,7 @@ def test_every_included_example_is_checked() -> None:
     assert included <= checked
 
 
-def public_names() -> List[str]:
+def public_names() -> list[str]:
     generators = [
         f"id_generators.{name}"
         for name in dir(id_generators)

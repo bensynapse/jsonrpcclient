@@ -3,7 +3,8 @@
 Each line shows what a user of the library should see from a type checker.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Union
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, Any
 
 from jsonrpcclient import (
     Error,
@@ -23,16 +24,16 @@ from jsonrpcclient import (
 from jsonrpcclient.responses import Response
 
 if TYPE_CHECKING:
-    from typing_extensions import assert_type
+    from typing import assert_type
 
     # List, tuple and dict params are all accepted.
-    assert_type(request("sqrt", params=[1, 2]), Dict[str, Any])
-    assert_type(request("sqrt", params=(1, 2)), Dict[str, Any])
-    assert_type(request("sqrt", params={"x": 1}), Dict[str, Any])
-    assert_type(request_hex("sqrt", [1]), Dict[str, Any])
-    assert_type(request_random("sqrt", [1]), Dict[str, Any])
-    assert_type(request_uuid("sqrt", [1], id="a"), Dict[str, Any])
-    assert_type(notification("log", params=[1]), Dict[str, Any])
+    assert_type(request("sqrt", params=[1, 2]), dict[str, Any])
+    assert_type(request("sqrt", params=(1, 2)), dict[str, Any])
+    assert_type(request("sqrt", params={"x": 1}), dict[str, Any])
+    assert_type(request_hex("sqrt", [1]), dict[str, Any])
+    assert_type(request_random("sqrt", [1]), dict[str, Any])
+    assert_type(request_uuid("sqrt", [1], id="a"), dict[str, Any])
+    assert_type(notification("log", params=[1]), dict[str, Any])
 
     # The JSON versions return str, not Any.
     assert_type(request_json("ping"), str)
@@ -43,9 +44,9 @@ if TYPE_CHECKING:
     request("sqrt", params="abc")  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     # parse knows a dict gives one response and a list gives an iterator.
-    assert_type(parse({"jsonrpc": "2.0", "result": 1, "id": 1}), Union[Ok, Error])
+    assert_type(parse({"jsonrpc": "2.0", "result": 1, "id": 1}), Ok | Error)
     assert_type(parse([{"jsonrpc": "2.0", "result": 1, "id": 1}]), Iterator[Response])
-    assert_type(parse_json("{}"), Union[Ok, Error, Iterator[Response]])
+    assert_type(parse_json("{}"), Ok | Error | Iterator[Response])
 
     parsed = parse({"jsonrpc": "2.0", "result": 1, "id": 1})
     if isinstance(parsed, Ok):

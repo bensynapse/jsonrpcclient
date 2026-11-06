@@ -1,7 +1,7 @@
 """Test responses.py"""
 
 from decimal import Decimal
-from typing import Any, Dict, Type, Union
+from typing import Any
 
 import pytest
 
@@ -40,7 +40,7 @@ def test_error() -> None:
         ),
     ],
 )
-def test_to_response(argument: Dict[str, str], expected: Response) -> None:
+def test_to_response(argument: dict[str, str], expected: Response) -> None:
     assert to_response(argument) == expected
 
 
@@ -86,7 +86,7 @@ def test_parse_empty_batch() -> None:
 
 
 @pytest.mark.parametrize("response", ["[]", b"[]", bytearray(b"[]")])
-def test_parse_json_empty_batch(response: Union[str, bytes, bytearray]) -> None:
+def test_parse_json_empty_batch(response: str | bytes | bytearray) -> None:
     with pytest.raises(InvalidResponse) as exc:
         parse_json(response)
     assert str(exc.value) == "Invalid JSON-RPC response: batch must not be empty"
@@ -130,7 +130,7 @@ def test_invalid_response(response: Any, message: str) -> None:
 
 @pytest.mark.parametrize("old_exception", [KeyError, TypeError])
 def test_invalid_response_is_caught_by_old_handlers(
-    old_exception: Type[Exception],
+    old_exception: type[Exception],
 ) -> None:
     with pytest.raises(old_exception):
         parse({"jsonrpc": "2.0", "result": 1})

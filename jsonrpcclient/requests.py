@@ -5,19 +5,20 @@ from there: `from jsonrpcclient import request`.
 """
 
 import json
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from collections.abc import Iterator
+from typing import Any
 
 from . import id_generators
 from .sentinels import NOID
 
-Params = Union[Dict[str, Any], List[Any], Tuple[Any, ...]]
+Params = dict[str, Any] | list[Any] | tuple[Any, ...]
 """The type of `params`: a list or tuple for positional params, a dict for named.
 
 A tuple is sent as a list. Empty params are left out of the request.
 """
 
 
-def notification_pure(method: str, params: Params) -> Dict[str, Any]:
+def notification_pure(method: str, params: Params) -> dict[str, Any]:
     """Create a notification"""
     return {
         "jsonrpc": "2.0",
@@ -30,7 +31,7 @@ def notification_pure(method: str, params: Params) -> Dict[str, Any]:
     }
 
 
-def notification(method: str, params: Optional[Params] = None) -> Dict[str, Any]:
+def notification(method: str, params: Params | None = None) -> dict[str, Any]:
     """Build a notification: a request with no id, which the server doesn't answer.
 
     Args:
@@ -49,7 +50,7 @@ def notification(method: str, params: Optional[Params] = None) -> Dict[str, Any]
     return notification_pure(method, params if params else ())
 
 
-def notification_json(method: str, params: Optional[Params] = None) -> str:
+def notification_json(method: str, params: Params | None = None) -> str:
     """Build a notification as a JSON string.
 
     The same as `json.dumps(notification(method, params))`.
@@ -76,7 +77,7 @@ def request_pure(
     method: str,
     params: Params,
     id: Any,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a request"""
     return {
         "jsonrpc": "2.0",
@@ -93,9 +94,9 @@ def request_pure(
 def request_impure(
     id_generator: Iterator[Any],
     method: str,
-    params: Optional[Params] = None,
+    params: Params | None = None,
     id: Any = NOID,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a request, optionally passing params and id.
 
     If id is not given, the next value from id_generator is used. If you share
@@ -114,8 +115,8 @@ _uuid_ids = id_generators.uuid()
 
 
 def request(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> Dict[str, Any]:
+    method: str, params: Params | None = None, id: Any = NOID
+) -> dict[str, Any]:
     """Build a request with an id.
 
     Unless you pass `id`, ids count up from 1. The sequence is shared by the
@@ -144,8 +145,8 @@ def request(
 
 
 def request_hex(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> Dict[str, Any]:
+    method: str, params: Params | None = None, id: Any = NOID
+) -> dict[str, Any]:
     """Build a request whose ids count up in hexadecimal strings: "1", ... "9", "a".
 
     The hex sequence is separate from the one `request` uses.
@@ -163,8 +164,8 @@ def request_hex(
 
 
 def request_random(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> Dict[str, Any]:
+    method: str, params: Params | None = None, id: Any = NOID
+) -> dict[str, Any]:
     """Build a request whose id is a random string of 8 lowercase letters and digits.
 
     Random ids are not guaranteed to be unique; use `request_uuid` if a clash
@@ -183,8 +184,8 @@ def request_random(
 
 
 def request_uuid(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> Dict[str, Any]:
+    method: str, params: Params | None = None, id: Any = NOID
+) -> dict[str, Any]:
     """Build a request whose id is a random UUID (version 4) string.
 
     Use this when several processes or machines send requests to the same
@@ -206,7 +207,7 @@ request_natural = request
 """An older name for `request`, kept so that old code still works."""
 
 
-def request_json(method: str, params: Optional[Params] = None, id: Any = NOID) -> str:
+def request_json(method: str, params: Params | None = None, id: Any = NOID) -> str:
     """Build a request as a JSON string.
 
     The same as `json.dumps(request(method, params, id))`, and it takes the next
@@ -231,9 +232,7 @@ def request_json(method: str, params: Optional[Params] = None, id: Any = NOID) -
     return json.dumps(request(method, params, id))
 
 
-def request_json_hex(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> str:
+def request_json_hex(method: str, params: Params | None = None, id: Any = NOID) -> str:
     """Build a request with a hexadecimal id, as a JSON string.
 
     The same as `json.dumps(request_hex(method, params, id))`.
@@ -255,7 +254,7 @@ def request_json_hex(
 
 
 def request_json_random(
-    method: str, params: Optional[Params] = None, id: Any = NOID
+    method: str, params: Params | None = None, id: Any = NOID
 ) -> str:
     """Build a request with a random id, as a JSON string.
 
@@ -277,9 +276,7 @@ def request_json_random(
     return json.dumps(request_random(method, params, id))
 
 
-def request_json_uuid(
-    method: str, params: Optional[Params] = None, id: Any = NOID
-) -> str:
+def request_json_uuid(method: str, params: Params | None = None, id: Any = NOID) -> str:
     """Build a request with a UUID id, as a JSON string.
 
     The same as `json.dumps(request_uuid(method, params, id))`.

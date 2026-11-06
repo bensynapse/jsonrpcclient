@@ -11,7 +11,7 @@ jsonrpcclient builds [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 requests and parses the responses. It doesn't send anything, so it works with
 any transport: HTTP, websockets, ZeroMQ, or something of your own. It has no
 dependencies, ships type hints, and is safe to use from several threads. It
-supports Python 3.8 to 3.14, including free-threaded 3.14t.
+supports Python 3.11 to 3.14, including free-threaded 3.14t.
 
 ## Install
 

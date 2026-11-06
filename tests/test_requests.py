@@ -1,7 +1,8 @@
 """Test requests.py"""
 
 import json
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 
@@ -41,7 +42,7 @@ from jsonrpcclient.requests import (
         ),
     ],
 )
-def test_notification(argument: Dict[str, Any], expected: Dict[str, Any]) -> None:
+def test_notification(argument: dict[str, Any], expected: dict[str, Any]) -> None:
     assert argument == expected
 
 
@@ -84,7 +85,7 @@ def test_notification_json() -> None:
         ),
     ],
 )
-def test_request(argument: Dict[str, Any], expected: Dict[str, Any]) -> None:
+def test_request(argument: dict[str, Any], expected: dict[str, Any]) -> None:
     assert argument == expected
 
 
@@ -103,7 +104,7 @@ def test_request_list_and_tuple_params() -> None:
 
 
 @pytest.mark.parametrize("func", [request_hex, request_random, request_uuid])
-def test_other_id_types(func: Callable[..., Dict[str, Any]]) -> None:
+def test_other_id_types(func: Callable[..., dict[str, Any]]) -> None:
     req = func("foo", [1])
     assert req["params"] == [1]
     assert isinstance(req["id"], str)

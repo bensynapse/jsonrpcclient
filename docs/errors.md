@@ -27,7 +27,7 @@ JSON-RPC error becomes a Python exception of your own:
 <!-- requires: requests -->
 <!-- server -->
 ```python
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
@@ -40,7 +40,7 @@ class RPCError(Exception):
         self.error = error
 
 
-def call(method: str, params: Optional[list] = None) -> Any:
+def call(method: str, params: list | None = None) -> Any:
     response = requests.post(
         "http://localhost:8000/", json=request(method, params), timeout=10
     )
@@ -127,8 +127,7 @@ The library checks the shape of a response, not its size or content.
 - **Deep nesting.** Very deeply nested JSON raises `RecursionError` from
   `json.loads`.
 - **Huge integers.** An integer with more than 4,300 digits raises
-  `ValueError` on Python 3.11 and later. The 3.8.14, 3.9.14 and 3.10.7
-  security releases added the same limit.
+  `ValueError` from `json.loads`.
 - **NaN and Infinity.** Python's `json` module accepts `NaN`, `Infinity` and
   `-Infinity`, which aren't valid JSON. To reject them, pass `parse_constant`
   to `parse_json`:

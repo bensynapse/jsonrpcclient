@@ -11,9 +11,10 @@ import asyncio
 import subprocess
 import sys
 import threading
-from contextlib import contextmanager, nullcontext
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from pathlib import Path
-from typing import Callable, ContextManager, Iterator, List, NamedTuple
+from typing import NamedTuple
 
 import zmq
 from websockets.asyncio.server import ServerConnection, serve
@@ -77,9 +78,9 @@ def zeromq_server() -> Iterator[None]:
 
 
 class Case(NamedTuple):
-    server: Callable[[], ContextManager[None]]
+    server: Callable[[], AbstractContextManager[None]]
     example: str
-    stdout: List[str]
+    stdout: list[str]
     stderr: str = ""  # must appear in stderr
 
 

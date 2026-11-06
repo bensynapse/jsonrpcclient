@@ -16,18 +16,19 @@ body.
 
 import json
 import threading
+from collections.abc import Generator
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any
 
 PORT = 8000
 
 
-def _error(code: int, message: str, id: Any = None) -> Dict[str, Any]:
+def _error(code: int, message: str, id: Any = None) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "error": {"code": code, "message": message}, "id": id}
 
 
-def _handle(request: Any) -> Optional[Dict[str, Any]]:
+def _handle(request: Any) -> dict[str, Any] | None:
     """Answer one request object, or return None for a notification."""
     if (
         not isinstance(request, dict)
@@ -35,11 +36,11 @@ def _handle(request: Any) -> Optional[Dict[str, Any]]:
         or not isinstance(request.get("method"), str)  # pyright: ignore[reportUnknownMemberType]
     ):
         return _error(-32600, "Invalid Request")
-    checked: Dict[str, Any] = request  # pyright: ignore[reportUnknownVariableType]
+    checked: dict[str, Any] = request  # pyright: ignore[reportUnknownVariableType]
     method: str = checked["method"]
     params: Any = checked.get("params", [])
     if method == "ping":
-        reply: Dict[str, Any] = {"jsonrpc": "2.0", "result": "pong"}
+        reply: dict[str, Any] = {"jsonrpc": "2.0", "result": "pong"}
     elif method == "add" and isinstance(params, list):
         reply = {"jsonrpc": "2.0", "result": sum(params)}  # pyright: ignore[reportUnknownArgumentType]
     else:
@@ -50,7 +51,7 @@ def _handle(request: Any) -> Optional[Dict[str, Any]]:
     return reply
 
 
-def respond(body: str, reject_batches: bool = False) -> Optional[str]:
+def respond(body: str, reject_batches: bool = False) -> str | None:
     """Return the JSON reply to a request body, or None if there is no reply.
 
     With reject_batches, every batch gets the single error object that
@@ -63,7 +64,7 @@ def respond(body: str, reject_batches: bool = False) -> Optional[str]:
     if isinstance(deserialized, list):
         if reject_batches or not deserialized:
             return json.dumps(_error(-32600, "Invalid Request"))
-        replies: List[Dict[str, Any]] = []
+        replies: list[dict[str, Any]] = []
         for request in deserialized:  # pyright: ignore[reportUnknownVariableType]
             reply = _handle(request)
             if reply is not None:

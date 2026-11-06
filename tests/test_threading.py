@@ -2,7 +2,8 @@
 
 import sys
 import threading
-from typing import Any, Callable, Iterator, List, Tuple
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
 
@@ -27,16 +28,16 @@ def frequent_thread_switches() -> Iterator[None]:
     sys.setswitchinterval(old)
 
 
-def hammer(func: Callable[[], Any]) -> Tuple[List[Any], List[str]]:
+def hammer(func: Callable[[], Any]) -> tuple[list[Any], list[str]]:
     """Call func from several threads at once and collect results and errors."""
-    ids: List[Any] = []
-    errors: List[str] = []
+    ids: list[Any] = []
+    errors: list[str] = []
     lock = threading.Lock()
     barrier = threading.Barrier(THREADS)
 
     def worker() -> None:
-        local_ids: List[Any] = []
-        local_errors: List[str] = []
+        local_ids: list[Any] = []
+        local_errors: list[str] = []
         barrier.wait()
         for _ in range(CALLS):
             try:

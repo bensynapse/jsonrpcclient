@@ -1,7 +1,8 @@
 """Helpers for building your own request and parse functions."""
 
+from collections.abc import Callable
 from functools import reduce
-from typing import Any, Callable
+from typing import Any
 
 
 def compose(*funcs: Callable[..., Any]) -> Callable[..., Any]:

@@ -11,9 +11,10 @@ process.
 
 import itertools
 import threading
+from collections.abc import Iterator
 from random import choice
 from string import ascii_lowercase, digits
-from typing import Iterator, TypeVar
+from typing import TypeVar
 from uuid import uuid4
 
 T = TypeVar("T")
