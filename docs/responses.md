@@ -143,6 +143,40 @@ string as the error gets `InvalidResponse` instead (see below).
     Versions before 4.1.0 returned `Ok(result=None, ...)` here and dropped the
     error.
 
+## Strict mode
+
+By default `parse` is lenient. It needs an `id`, and a `result` or an `error`
+object with `code` and `message`, and accepts the rest. Many servers bend
+the spec, and a client usually wants their answer anyway.
+
+Pass `strict=True` to check every JSON-RPC 2.0 rule for a response:
+
+- `"jsonrpc"` is `"2.0"`.
+- There's exactly one of `result` and `error`. A null `error` counts as one.
+- `error.code` is an int and `error.message` is a string.
+- `id` is a string, a number or null.
+
+```pycon
+>>> parse({"result": "pong", "id": 1})
+Ok(result='pong', id=1)
+>>> parse({"result": "pong", "id": 1}, strict=True)
+Traceback (most recent call last):
+    ...
+jsonrpcclient.responses.InvalidResponse: Invalid JSON-RPC response: missing 'jsonrpc'
+>>> parse({"jsonrpc": "2.0", "result": "pong", "id": 1}, strict=True)
+Ok(result='pong', id=1)
+```
+
+`parse_json` takes `strict` too. It works the same for a batch, and the
+message gives the index of the first bad item. Use it in tests of your own
+server, or when a reply that bends the rules should count as a failure.
+
+!!! info "New in 5.0"
+    In 4.x, `parse_json(..., strict=...)` passed `strict` on to `json.loads`,
+    where `strict=False` allows control characters in strings. For that,
+    call `parse(json.loads(text, strict=False))`. 4.2.0 warns about the old
+    use.
+
 ## Invalid responses
 
 If a response is malformed, `parse` and `parse_json` raise `InvalidResponse`
