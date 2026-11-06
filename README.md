@@ -98,7 +98,8 @@ before upgrading.
 - [Transport examples](https://bensynapse.github.io/jsonrpcclient/examples/)
 - [FAQ](https://bensynapse.github.io/jsonrpcclient/faq/)
 - [Contributing](https://github.com/bensynapse/jsonrpcclient/blob/main/CONTRIBUTING.md)
-  and [security policy](https://github.com/bensynapse/jsonrpcclient/blob/main/SECURITY.md)
+  and [security policy](https://github.com/bensynapse/jsonrpcclient/blob/main/SECURITY.md),
+  which says how long each release line gets fixes
 - [License](https://github.com/bensynapse/jsonrpcclient/blob/main/LICENSE): MIT
 
 ## See also

@@ -1,0 +1,7 @@
+{
+  "site_url": "https://bensynapse.github.io/jsonrpcclient/",
+  "stable": "4.x",
+  "versions": [
+    {"version": "4.x", "title": "4.x", "ref": "release/4.x"}
+  ]
+}
