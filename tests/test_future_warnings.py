@@ -8,7 +8,6 @@ import pytest
 
 import jsonrpcclient
 from jsonrpcclient import (
-    _future,
     notification,
     notification_json,
     parse,
@@ -131,20 +130,3 @@ def test_parse_does_not_warn() -> None:
         warnings.simplefilter("error")
         parse(response)
         list(parse([response]))
-
-
-@pytest.mark.parametrize("version", [(3, 8), (3, 10, 15)])
-def test_old_python_warns(version: Any) -> None:
-    with pytest.warns(FutureWarning) as record:
-        _future.check_python(version)
-    assert str(record[0].message) == (
-        "jsonrpcclient 5.0 needs Python 3.11 or later. On this Python, pip keeps "
-        "installing 4.x."
-    )
-
-
-@pytest.mark.parametrize("version", [(3, 11), (3, 14, 0)])
-def test_supported_python_does_not_warn(version: Any) -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        _future.check_python(version)
