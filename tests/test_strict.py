@@ -45,6 +45,14 @@ def test_valid_responses_pass(response: dict[str, Any], expected: Any) -> None:
         ({**OK, "id": True}, "'id' must be a string, a number or null, got bool"),
         ({**OK, "id": [1]}, "'id' must be a string, a number or null, got list"),
         ({**OK, "id": {}}, "'id' must be a string, a number or null, got dict"),
+        (
+            {**OK, "id": float("nan")},
+            "'id' must be a string, a number or null, got nan",
+        ),
+        (
+            {**OK, "id": float("inf")},
+            "'id' must be a string, a number or null, got inf",
+        ),
         ({**ERROR, "result": None}, "has both 'result' and 'error'"),
         ({**OK, "error": None}, "has both 'result' and 'error'"),
         ({"jsonrpc": "2.0", "id": 1}, "needs a 'result' or an 'error'"),
