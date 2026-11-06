@@ -104,8 +104,8 @@ def test_lists_tuples_and_dicts_are_accepted(
 
 
 def test_subclasses_are_sent_as_lists_and_dicts() -> None:
-    assert request("move", Point(1, 2), id=1)["params"] == [1, 2]
-    assert request("move", OrderedDict(x=1), id=1)["params"] == {"x": 1}
+    assert request("move", Point(1, 2), id=1).get("params") == [1, 2]
+    assert request("move", OrderedDict(x=1), id=1).get("params") == {"x": 1}
 
 
 def test_a_method_starting_with_rpc_is_allowed() -> None:

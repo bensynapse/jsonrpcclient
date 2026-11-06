@@ -99,8 +99,8 @@ def test_request_json() -> None:
 
 
 def test_request_list_and_tuple_params() -> None:
-    assert request("sqrt", [1, 2], id=1)["params"] == [1, 2]
-    assert request("sqrt", (1, 2), id=1)["params"] == [1, 2]
+    assert request("sqrt", [1, 2], id=1).get("params") == [1, 2]
+    assert request("sqrt", (1, 2), id=1).get("params") == [1, 2]
 
 
 @pytest.mark.parametrize("func", [request_hex, request_random, request_uuid])

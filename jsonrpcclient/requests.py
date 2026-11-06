@@ -6,7 +6,7 @@ from there: `from jsonrpcclient import request`.
 
 import json
 from collections.abc import Iterator
-from typing import Any
+from typing import Any, Literal, NotRequired, TypedDict
 
 from . import id_generators
 from .sentinels import NOID
@@ -16,6 +16,41 @@ Params = dict[str, Any] | list[Any] | tuple[Any, ...]
 
 A tuple is sent as a list. Empty params are left out of the request.
 """
+
+
+class Request(TypedDict):
+    """A request, as `request` and its variants return it.
+
+    A plain dict at run time. The type tells a type checker which keys it has.
+    New in 5.0, before which the request functions returned `dict[str, Any]`.
+
+    Examples:
+        >>> request("sqrt", [16], id=1)["method"]
+        'sqrt'
+    """
+
+    jsonrpc: Literal["2.0"]
+    method: str
+    params: NotRequired[list[Any] | dict[str, Any]]
+    """Left out when the params are empty or not given."""
+    id: Any
+
+
+class Notification(TypedDict):
+    """A notification, as `notification` returns it: a request without an id.
+
+    A plain dict at run time. New in 5.0, before which `notification` returned
+    `dict[str, Any]`.
+    """
+
+    jsonrpc: Literal["2.0"]
+    method: str
+    params: NotRequired[list[Any] | dict[str, Any]]
+    """Left out when the params are empty or not given."""
+
+
+def _params(params: Params) -> list[Any] | dict[str, Any]:
+    return list(params) if isinstance(params, tuple) else params
 
 
 def _check(method: object, params: object) -> None:
@@ -32,20 +67,14 @@ def _check(method: object, params: object) -> None:
         )
 
 
-def notification_pure(method: str, params: Params) -> dict[str, Any]:
+def notification_pure(method: str, params: Params) -> Notification:
     """Create a notification"""
-    return {
-        "jsonrpc": "2.0",
-        "method": method,
-        **(
-            {"params": list(params) if isinstance(params, tuple) else params}
-            if params
-            else {}
-        ),
-    }
+    if params:
+        return {"jsonrpc": "2.0", "method": method, "params": _params(params)}
+    return {"jsonrpc": "2.0", "method": method}
 
 
-def notification(method: str, params: Params | None = None) -> dict[str, Any]:
+def notification(method: str, params: Params | None = None) -> Notification:
     """Build a notification: a request with no id, which the server doesn't answer.
 
     Args:
@@ -98,18 +127,13 @@ def request_pure(
     method: str,
     params: Params,
     id: Any,
-) -> dict[str, Any]:
+) -> Request:
     """Create a request"""
-    return {
-        "jsonrpc": "2.0",
-        "method": method,
-        **(
-            {"params": list(params) if isinstance(params, tuple) else params}
-            if params
-            else {}
-        ),
-        "id": id if id is not NOID else next(id_generator),
-    }
+    if id is NOID:
+        id = next(id_generator)
+    if params:
+        return {"jsonrpc": "2.0", "method": method, "params": _params(params), "id": id}
+    return {"jsonrpc": "2.0", "method": method, "id": id}
 
 
 def request_impure(
@@ -117,7 +141,7 @@ def request_impure(
     method: str,
     params: Params | None = None,
     id: Any = NOID,
-) -> dict[str, Any]:
+) -> Request:
     """Create a request, optionally passing params and id.
 
     If id is not given, the next value from id_generator is used. If you share
@@ -140,9 +164,7 @@ _random_ids = id_generators.random()
 _uuid_ids = id_generators.uuid()
 
 
-def request(
-    method: str, params: Params | None = None, id: Any = NOID
-) -> dict[str, Any]:
+def request(method: str, params: Params | None = None, id: Any = NOID) -> Request:
     """Build a request with an id.
 
     Unless you pass `id`, ids count up from 1. The sequence is shared by the
@@ -173,9 +195,7 @@ def request(
     return request_impure(_decimal_ids, method, params, id)
 
 
-def request_hex(
-    method: str, params: Params | None = None, id: Any = NOID
-) -> dict[str, Any]:
+def request_hex(method: str, params: Params | None = None, id: Any = NOID) -> Request:
     """Build a request whose ids count up in hexadecimal strings: "1", ... "9", "a".
 
     The hex sequence is separate from the one `request` uses.
@@ -194,7 +214,7 @@ def request_hex(
 
 def request_random(
     method: str, params: Params | None = None, id: Any = NOID
-) -> dict[str, Any]:
+) -> Request:
     """Build a request whose id is a random string of 8 lowercase letters and digits.
 
     Random ids are not guaranteed to be unique; use `request_uuid` if a clash
@@ -212,9 +232,7 @@ def request_random(
     return request_impure(_random_ids, method, params, id)
 
 
-def request_uuid(
-    method: str, params: Params | None = None, id: Any = NOID
-) -> dict[str, Any]:
+def request_uuid(method: str, params: Params | None = None, id: Any = NOID) -> Request:
     """Build a request whose id is a random UUID (version 4) string.
 
     Use this when several processes or machines send requests to the same

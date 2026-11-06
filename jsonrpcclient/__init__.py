@@ -6,6 +6,8 @@ https://bensynapse.github.io/jsonrpcclient/
 """
 
 from .requests import (
+    Notification,
+    Request,
     notification,
     notification_json,
     request,
@@ -25,7 +27,9 @@ __version__ = "5.0.0.dev0"
 __all__ = [
     "Error",
     "InvalidResponse",
+    "Notification",
     "Ok",
+    "Request",
     "notification",
     "notification_json",
     "parse",

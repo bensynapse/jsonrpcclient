@@ -7,8 +7,9 @@ description: API reference for jsonrpcclient, generated from the source code. Ev
 This page is generated from the docstrings in the source code, so it matches
 the code on the main branch.
 
-Everything in the first four sections can be imported from the package
-itself, for example `from jsonrpcclient import request, parse`. The other
+Everything in the first four sections, and `Request` and `Notification`, can
+be imported from the package itself, for example
+`from jsonrpcclient import request, parse`. The other
 public names are in `jsonrpcclient.id_generators`, `jsonrpcclient.utils`,
 `jsonrpcclient.responses` (the `Response` type) and `jsonrpcclient.requests`
 (the `Params` type). Anything not listed here is internal and can change in
@@ -68,6 +69,10 @@ id from its sequence.
         - uuid
 
 ## Types
+
+::: jsonrpcclient.Request
+
+::: jsonrpcclient.Notification
 
 ::: jsonrpcclient.responses.Response
 

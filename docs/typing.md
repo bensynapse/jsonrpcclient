@@ -92,7 +92,34 @@ error -32601: Method not found
 
 For params, `jsonrpcclient.requests.Params` is
 `dict[str, Any] | list[Any] | tuple[Any, ...]`. A string isn't accepted:
-`request("sqrt", "16")` is a type error.
+`request("sqrt", "16")` is a type error, and a `TypeError` at run time.
 
-The request functions return `dict[str, Any]`, and the `*_json` versions
-return `str`.
+## Requests are TypedDicts
+
+`request` and its variants return a `Request`, and `notification` returns a
+`Notification`. Both are `TypedDict`s, so a type checker knows their keys.
+At run time they're plain dicts. The `*_json` versions return `str`.
+
+```python
+from jsonrpcclient import Notification, Request, notification, request
+
+batch: list[Request | Notification] = [request("ping"), notification("log")]
+first = batch[0]
+print(first["method"])
+print(first.get("params"))
+```
+
+```text title="Output"
+ping
+None
+```
+
+`params` is left out when it's empty, so the type marks it `NotRequired`.
+Read it with `.get("params")`. A type checker flags `["params"]`, which
+raises `KeyError` for a request without params.
+
+!!! info "Changed in 5.0"
+    The request functions returned `dict[str, Any]` before 5.0. mypy doesn't
+    accept a `TypedDict` where `dict[str, Any]` is expected, so annotate with
+    `Request`, `Notification` or `Mapping[str, Any]` instead. A request can
+    no longer be given extra keys without a type error.
