@@ -53,6 +53,10 @@ qa = [
 [tool.flit.sdist]
 include = [
     "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "RELEASING.md",
+    "SECURITY.md",
     "docs/",
     "overrides/",
     "mkdocs.yml",

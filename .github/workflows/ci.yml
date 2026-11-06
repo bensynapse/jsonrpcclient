@@ -2,15 +2,22 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # release/ branches carry patch releases for an older line (RELEASING.md).
+    branches: [main, "release/**"]
   pull_request:
   workflow_dispatch:
+  schedule:
+    # Weekly on main, so a tool that drifts under a pin shows up here before
+    # it breaks somebody's pull request (the docs build did, 2026-11-06).
+    - cron: "23 5 * * 1"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # A new push to a pull request cancels its older run. On main each commit
+  # gets its own group, so no commit there is left with cancelled checks.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -50,6 +57,14 @@ jobs:
       - run: ruff format --check .
       - run: mypy
       - run: pyright
+      - name: No links to hijacked domains anywhere in the repo
+        run: |
+          # The second pattern is the previous author's blog, which now redirects to spam.
+          # The FAQ and SECURITY.md name the old domains, as plain text, so readers recognise them.
+          if git grep -n -I -i -E 'jsonrpc(client|server)\.com|composed\.blog' -- ':!.github/scripts/check_metadata.py' ':!docs/faq.md' ':!SECURITY.md'; then
+            echo "::error::Remove the links above. Those domains no longer belong to the project."
+            exit 1
+          fi
 
   package:
     runs-on: ubuntu-24.04
