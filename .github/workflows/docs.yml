@@ -50,6 +50,9 @@ jobs:
   build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
+    # A hung step would otherwise hold the pages concurrency group, and every
+    # later deploy behind it, for GitHub's default of six hours.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -73,6 +76,8 @@ jobs:
             python .github/scripts/build_docs_site.py
           fi
       - run: python -m playwright install --with-deps chromium
+        # It usually takes under 30 seconds, but once hung for over 10 minutes.
+        timeout-minutes: 5
       - name: Download axe-core and check its hash
         env:
           AXE_VERSION: "4.14.0"
@@ -93,6 +98,7 @@ jobs:
     needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
