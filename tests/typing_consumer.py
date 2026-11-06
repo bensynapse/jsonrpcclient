@@ -64,6 +64,11 @@ if TYPE_CHECKING:
     assert_type(parse({"jsonrpc": "2.0", "result": 1, "id": 1}), Ok | Error)
     assert_type(parse([{"jsonrpc": "2.0", "result": 1, "id": 1}]), list[Response])
     assert_type(parse_json("{}"), Ok | Error | list[Response])
+    assert_type(parse({"result": 1, "id": 1}, strict=True), Ok | Error)
+    assert_type(parse([{"result": 1, "id": 1}], strict=True), list[Response])
+    assert_type(
+        parse_json("{}", strict=True, parse_float=str), Ok | Error | list[Response]
+    )
 
     parsed = parse({"jsonrpc": "2.0", "result": 1, "id": 1})
     if isinstance(parsed, Ok):

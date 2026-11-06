@@ -6,6 +6,7 @@ the `jsonrpcclient` package. The `Response` type alias lives only here:
 """
 
 import json
+import reprlib
 from collections.abc import Mapping
 from typing import Any, NamedTuple, cast, overload
 
@@ -89,7 +90,46 @@ def _invalid(reason: str, index: int | None) -> InvalidResponse:
     return InvalidResponse(f"Invalid JSON-RPC response{where}: {reason}")
 
 
-def to_response(response: dict[str, Any], index: int | None = None) -> Response:
+def _check_strict(response: Mapping[str, Any], index: int | None) -> None:
+    """Check the rules that `strict=True` adds. See `parse`."""
+    if "jsonrpc" not in response:
+        raise _invalid("missing 'jsonrpc'", index)
+    if response["jsonrpc"] != "2.0":
+        got = reprlib.repr(response["jsonrpc"])
+        raise _invalid(f"'jsonrpc' must be \"2.0\", got {got}", index)
+    if "id" not in response:
+        raise _invalid("missing 'id'", index)
+    id_: object = response["id"]
+    if isinstance(id_, bool) or not isinstance(id_, (str, int, float, type(None))):
+        raise _invalid(
+            f"'id' must be a string, a number or null, got {_type_name(id_)}", index
+        )
+    if "result" in response and "error" in response:
+        raise _invalid("has both 'result' and 'error'", index)
+    if "error" not in response:
+        if "result" not in response:
+            raise _invalid("needs a 'result' or an 'error'", index)
+        return
+    error: object = response["error"]
+    if not isinstance(error, Mapping):
+        raise _invalid(f"'error' must be an object, got {_type_name(error)}", index)
+    error_obj = cast("Mapping[str, Any]", error)
+    for member in ("code", "message"):
+        if member not in error_obj:
+            raise _invalid(f"'error' is missing '{member}'", index)
+    code: object = error_obj["code"]
+    if isinstance(code, bool) or not isinstance(code, int):
+        raise _invalid(f"'error.code' must be an int, got {_type_name(code)}", index)
+    message: object = error_obj["message"]
+    if not isinstance(message, str):
+        raise _invalid(
+            f"'error.message' must be a str, got {_type_name(message)}", index
+        )
+
+
+def to_response(
+    response: dict[str, Any], index: int | None = None, *, strict: bool = False
+) -> Response:
     """Turn one deserialized response object into an `Ok` or an `Error`.
 
     Internal; use `parse`. If the response has a non-null "error", it's an
@@ -99,6 +139,7 @@ def to_response(response: dict[str, Any], index: int | None = None) -> Response:
     Args:
         response: One response object.
         index: Its position in a batch, for the error message.
+        strict: Check the rules that `parse(..., strict=True)` checks.
 
     Raises:
         InvalidResponse: If the response is malformed.
@@ -107,6 +148,8 @@ def to_response(response: dict[str, Any], index: int | None = None) -> Response:
     if not isinstance(obj, Mapping):
         raise _invalid(f"expected an object, got {_type_name(obj)}", index)
     checked = cast("Mapping[str, Any]", obj)
+    if strict:
+        _check_strict(checked, index)
     if "id" not in checked:
         raise _invalid("missing 'id'", index)
     error: object = checked.get("error")
@@ -129,18 +172,24 @@ def to_response(response: dict[str, Any], index: int | None = None) -> Response:
 
 
 @overload
-def parse(deserialized: dict[str, Any]) -> Response: ...
+def parse(deserialized: dict[str, Any], *, strict: bool = False) -> Response: ...
 
 
 @overload
-def parse(deserialized: list[dict[str, Any]]) -> list[Response]: ...
+def parse(
+    deserialized: list[dict[str, Any]], *, strict: bool = False
+) -> list[Response]: ...
 
 
 @overload
-def parse(deserialized: Deserialized) -> Response | list[Response]: ...
+def parse(
+    deserialized: Deserialized, *, strict: bool = False
+) -> Response | list[Response]: ...
 
 
-def parse(deserialized: Deserialized) -> Response | list[Response]:
+def parse(
+    deserialized: Deserialized, *, strict: bool = False
+) -> Response | list[Response]:
     """Parse a deserialized response, or a batch of them.
 
     A dict gives one `Ok` or `Error`. A list (a batch) gives a list of `Ok` and
@@ -151,12 +200,17 @@ def parse(deserialized: Deserialized) -> Response | list[Response]:
     Changed in 5.0: a batch gives a list. 4.x gave a one-pass iterator, which
     raised for a bad item only when the loop reached it.
 
-    If a response has a non-null `error`, it is an `Error`, even if it also has
-    a `result`.
+    By default `parse` is lenient, as in 4.x. It needs an `id`, and a `result`
+    or an `error` object with `code` and `message`. If a response has a
+    non-null `error`, it is an `Error`, even if it also has a `result`.
 
     Args:
         deserialized: A response that has already been through `json.loads` (or
             your HTTP library's `.json()`).
+        strict: Also check the other JSON-RPC 2.0 rules: `"jsonrpc"` is
+            `"2.0"`, a response has exactly one of `result` and `error` (a
+            null `error` counts), `error.code` is an int and `error.message` a
+            str, and `id` is a string, a number or null. New in 5.0.
 
     Returns:
         An `Ok` or `Error` for a dict, or a list of them for a list.
@@ -175,27 +229,33 @@ def parse(deserialized: Deserialized) -> Response | list[Response]:
     """
     if isinstance(deserialized, (str, bytes, bytearray)):
         raise TypeError("Use parse_json on strings")
-    return _parse(deserialized)
+    return _parse(deserialized, strict)
 
 
-def _parse(deserialized: Deserialized) -> Response | list[Response]:
+def _parse(deserialized: Deserialized, strict: bool) -> Response | list[Response]:
     if isinstance(deserialized, list):
         if not deserialized:
             raise InvalidResponse("Invalid JSON-RPC response: batch must not be empty")
-        return [to_response(item, index) for index, item in enumerate(deserialized)]
-    return to_response(deserialized)
+        return [
+            to_response(item, index, strict=strict)
+            for index, item in enumerate(deserialized)
+        ]
+    return to_response(deserialized, strict=strict)
 
 
 def parse_json(
-    response: str | bytes | bytearray, **kwargs: Any
+    response: str | bytes | bytearray, *, strict: bool = False, **kwargs: Any
 ) -> Response | list[Response]:
     """Parse a response, or a batch of them, from a JSON string.
 
-    The same as `parse(json.loads(response, **kwargs))`, except that it doesn't
-    raise `TypeError` for a string.
+    The same as `parse(json.loads(response, **kwargs), strict=strict)`, except
+    that it doesn't raise `TypeError` for a string.
 
     Args:
         response: The response body, as `str`, `bytes` or `bytearray`.
+        strict: The same as `parse`'s. New in 5.0. In 4.x, `strict` went to
+            `json.loads`. For that option, call
+            `parse(json.loads(response, strict=False))`.
         **kwargs: Passed to `json.loads`, for example `parse_float=Decimal`.
 
     Returns:
@@ -214,4 +274,4 @@ def parse_json(
         Ok(result='pong', id=1)
     """
     deserialized: Deserialized = json.loads(response, **kwargs)
-    return _parse(deserialized)
+    return _parse(deserialized, strict)
