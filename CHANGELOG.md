@@ -67,8 +67,8 @@ for what to check when upgrading.
 This release fixes the links on the PyPI page. The 4.0.3 page linked to the
 project's old website domain, which now belongs to someone else and serves a
 gambling site. Issue #229 was closed when the link changed in this repository,
-but PyPI keeps showing the old link until a new release is published (#229,
-#230). The links now point to
+but PyPI keeps showing the old link until a new release is published
+(#229, #230). The links now point to
 https://bensynapse.github.io/jsonrpcclient/ and
 https://github.com/bensynapse/jsonrpcclient.
 
