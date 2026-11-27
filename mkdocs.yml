@@ -122,6 +122,7 @@ nav:
   - Project:
       - Changelog: changelog.md
       - Contributing: contributing.md
+      - Contributors: contributors.md
       - Security: security.md
       - License: license.md
       - jsonrpcserver: https://github.com/bensynapse/jsonrpcserver
