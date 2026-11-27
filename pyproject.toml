@@ -40,6 +40,7 @@ Documentation = "https://bensynapse.github.io/jsonrpcclient/"
 Repository = "https://github.com/bensynapse/jsonrpcclient"
 Issues = "https://github.com/bensynapse/jsonrpcclient/issues"
 Changelog = "https://bensynapse.github.io/jsonrpcclient/changelog/"
+Maintainer = "https://synapsereality.io/open-source/"
 
 [project.optional-dependencies]
 qa = [
